@@ -1,0 +1,74 @@
+% NI 9402
+% Update rate at 55 ns, Matlab tic toc updates at ~ 392 ns == OK
+% Maximum I/O switching Frequency for 4 Channels @ 16 MHz
+
+% MAX Input Voltage = 5.25V, recommend input high @ 2V
+
+% MAX Output High Voltage = 3.4V  sourcing 100 microA = 3.0V minimum
+%                                 sourcing   2 milliA = 2.8V minimum
+
+% MAX Output Low Voltage          sinking  100 microA = 0.1V Max
+%                                 sinking    2 milliA = 0.3V Max
+
+% MAX I/O switching               2 channels 20 MHz
+
+% I/O Propogation Delay           55 ns maximum, 18 ns typical
+% Propogation delay is the max amount of time for an input or output signal
+% to propogate b/w the backplane and the I/O connector, & doesn't include
+% any additional delay from the cable.
+% Measured at the I/O connector of a load w/ requirements similar to the NI
+% 9402 and driven through a 2m coaxial cable.
+
+% I/O pulse width distortion      25 ns maximum
+% Measured at the I/O connector of a load w/ requirements similar to the NI
+% 9402 and driven through a 2m coaxial cable.
+
+% MAX Input rise/fall rate            10 ns/V maximum
+
+daqreset
+
+% To discover a the NI device and save as variable 'devices'
+d = daq.getDevices;
+vend = daq.getVendors;
+
+% find what slot # to use in the cDAQ chasis
+slot = d.SlotNumber;
+% Create a session
+s = daq.createSession('ni')
+
+% addDigitalChannel(s,'cDAQ1Mod1','Port0/Line1','OutputOnly');
+addCounterOutputChannel(s, 'cDAQ2Mod1', [1 2], 'PulseGeneration')
+% Add analog output channels
+addAnalogInputChannel(s,'cDAQ2Mod2',0,'Voltage');
+[ch,idx] = addAnalogOutputChannel(s,'cDAQ1Mod3','ao0','Voltage');
+
+
+% Set the Session Rate
+% ~3.6 Million scans/sec. Need 2.55 Million scans/sec to keep up with 
+% Matlabs tic toc function, but it's not exact. This is roughly 1 scan every 392 ns
+s.Rate = 50000;
+s.NumberOfScans = s.Rate*duration;
+s.TriggersPerRun = 4000;
+
+% Generate a single scan
+% Output 2V on each channel
+outputSingleValue = 2;
+outputSingleScan(s,[outputSingleValue outputSingleValue]);
+
+% Queue the data
+% Output low voltage at 0.05V, output high voltage at 3.2V, do this for
+% every 1/2.55 million seconds. 
+% Input rise/fall rate will take about 30 ns, well within 392 ns
+outputSignal1 = linspace(0.05, 3.2, trigger(s));
+outputSignal2 = linspace(0.05, 3.2, 1/s.Rate)';
+plot(outputSignal1);
+hold on;
+plot(outputSignal2,'-g');
+xlabel('Time');
+ylabel('Voltage');
+
+legend('Analog Output 0', 'Analog Output 1');
+queueOutputData(s,trigger(s));
+
+% Start the session
+s.startForeground;

@@ -1,0 +1,34 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Test Config
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+daqreset
+% To discover a the NI device and save as variable 'devices'
+d = daq.getDevices;
+vend = daq.getVendors;
+% find what slot # to use in the cDAQ chasis
+slot = d.SlotNumber;
+
+s = daq.createSession('ni');
+% addCounterOutputChannel(s, 'cDAQ2Mod1', 'ctr0', 'PulseGeneration')
+an = addAnalogInputChannel(s,'cDAQ2Mod2',1,'Voltage');
+an.Range = [0.5 3.0];
+sub = an.Device.Subsystems;
+sub(1).RangesAvailable
+% addDigitalChannel(s,'cDAQ2Mod1','port0/line0','Bidirectional');
+addDigitalChannel(s,'cDAQ2Mod1','port0/line0:1','OutputOnly');
+
+% s.Channels(1).Terminal;
+ch = s.Channels;
+% ch.IdleState='High';
+% ch(2).Frequency = 10;
+ch.InitialDelay = 0.0008;
+ch.DutyCycle = 0.5;
+s.Rate = 3600000;
+s.DurationInSeconds = .1;
+
+lh = addlistener(s,'DataAvailable',@plotData);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+startBackground(s);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
