@@ -1,4 +1,4 @@
-function [meg_tw, Fmeg_tw, meg_f, meg_fft_singleTW, x_abs, x_pow, x_pow_str, feat, alpha, beta, w, freq_val, freq_width, PLV, d, B, I, d_sort, d_s, PLV_Rest_I, PLV_Move_I] =meg_initvars(answers, meg,  fs,nfft, freq, chans, trials)
+function [meg_tw, Fmeg, meg_f, meg_fft_singleTW, x_abs, x_pow, x_pow_str, feat, alpha, beta, w, freq_val, freq_width, PLV, d, B, I, d_sort, d_s, PLV_Rest_I, PLV_Move_I] =meg_initvars(answers, meg,  fs,nfft, freq, chans, trials, Fmeg)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
   % Sampling Frequency and filter coefficients
@@ -21,7 +21,7 @@ function [meg_tw, Fmeg_tw, meg_f, meg_fft_singleTW, x_abs, x_pow, x_pow_str, fea
        meg_tw = cell(trials, 2 );
        
     % Filtered meg time window data
-       Fmeg_tw = cell(trials, 2 );
+       Fmeg = cell(trials, 2 );
     % windowed meg frequency (Short-time fft)
        meg_f = cell(trials, 1 );
        
