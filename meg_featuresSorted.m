@@ -3,7 +3,7 @@ function [Mahal_Vec, Class_Vec] = meg_featuresSorted(trials_compared, top_featur
 %   Detailed explanation goes here
 
     Mahal_Vec = zeros(trials_compared*10, 3);
-    Class_Vec = cell( trials_compared * top_features, 1 );
+    Class_Vec = [];
     for i = 1:trials_compared
         %Sorted Mahal Distances - All PLV_Mahal_Sort cell values in one column
         Mahal_Vec( (i*10-10+1): i*10, 1 ) = PLV_Mahal_Sort{i};
@@ -14,7 +14,7 @@ function [Mahal_Vec, Class_Vec] = meg_featuresSorted(trials_compared, top_featur
 
         % Cell vector of Channel Interaction Classes
         for j = 1:top_features
-            Class_Vec{j+(i-1)*10} = convertStringsToChars(PLV_Mahal_Coord{i,2}(j,1));
+            Class_Vec{j+(i-1)*10} = convertStringsToChars(PLV_Mahal_Coord{i,2}{j,1});
         end
 
     end
