@@ -31,7 +31,7 @@ MIcal = mical_real_july2021();
         end
         % All I care about is meg & label data during the task trials (1 & 2)
         labels = labels(temp_ind);
-        meg = meg(temp_ind);
+        meg = meg(:, temp_ind);
      end
 end
 

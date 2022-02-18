@@ -14,6 +14,7 @@ srate = 1000;
 % blocks(1).meg(:,[4 6 7 11 15 16 20 23]) = [];
 % blocks(2).meg(:,[4 6 7 11 15 16 20 23]) = [];
 
+% meg - channels x data
 % Extract labels from MEG data for movement task
 [labels, meg] = meg_labels(answers);
 
