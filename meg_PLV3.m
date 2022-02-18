@@ -1,4 +1,4 @@
-function [meg_tw, Fmeg, PLV, PLV_Rest_I, PLV_Move_I, PLV_cut, row, col] = meg_PLV(meg, w, labels, trials, shift, tw, srate, freq_val, freq_width, PLV_Rest_I, PLV_Move_I)
+function [meg_tw, Fmeg, PLV, PLV_Rest_I, PLV_Move_I, PLV_cut, row, col] = meg_PLV3(meg, w, labels, trials, shift, tw, srate, freq_val, freq_width, PLV_Rest_I, PLV_Move_I)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
     for T = 1:( trials )
@@ -29,15 +29,16 @@ function [meg_tw, Fmeg, PLV, PLV_Rest_I, PLV_Move_I, PLV_cut, row, col] = meg_PL
                 % -10000 values are messing up the Fmeg
                 Fmeg{T,1} = filterFGx(meg_tw{T,1}, srate, freq_val, freq_width);
                 % filtdata - chans x data
-                for j = 1: size(meg_tw{T,1}, 1)
-                    for k = 1: size(meg_tw{T,1},2)
-                        % angle is in radians - chans x data
-                        % Check Hilbert Angle
-                        h(j,k) = hilbert( (Fmeg{T,1}(j,k))' );
-                        angts(j,k) = angle(hilbert( (Fmeg{T,1}(j,k))' ) );
-%                         angts(j,k) = angle(hilbert(Fmeg{T,1}(j,k)').');
-                    end
-                end
+%                 for j = 1: size(meg_tw{T,1}, 1)
+%                     for k = 1: size(meg_tw{T,1},2)
+%                         % angle is in radians - chans x data
+%                         % Check Hilbert Angle
+%                         h(j,k) = hilbert( (Fmeg{T,1}(j,k))' );
+%                         angts(j,k) = angle(hilbert( (Fmeg{T,1}(j,k))' ) );
+% %                         angts(j,k) = angle(hilbert(Fmeg{T,1}(j,k)').');
+%                     end
+%                 end
+                angts = angle(hilbert(Fmeg{T,1}'))';
                 
                 % Phase Locking Value
                 %Create variables

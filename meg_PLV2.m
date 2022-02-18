@@ -54,7 +54,7 @@ function [meg_tw, Fmeg, PLV, PLV_Rest_I, PLV_Move_I, PLV_cut, row, col] = meg_PL
                     for chani = 1: size(angts,1)
                     % chans
 %                     for chanj = 1: size(meg_tw{T,1},2)
-                        for chanj = 1: size(angts,1)
+                        for chani = 1: size(angts,1)
                         tmpAi = angts(chani, :);
                         tmpAj = angts(chanj, :);
                         % This is the PLV formula
@@ -67,9 +67,9 @@ function [meg_tw, Fmeg, PLV, PLV_Rest_I, PLV_Move_I, PLV_cut, row, col] = meg_PL
                 end
                 
                 if PLV{T,2} == "Rest"
-                    PLV_Rest_I(T,1) = T;
+                    PLV_Rest_I(T) = T;
                 elseif PLV{T,2} == "Move"
-                    PLV_Move_I(T,1) = T;
+                    PLV_Move_I(T)= T;
                 end
 
     end

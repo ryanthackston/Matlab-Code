@@ -1,10 +1,10 @@
-function [PLV_Mahal_Sort, PLV_Mahal_Coord, PLV_Diff_Coord, PLV_Diff_Sort, trials_compared] = meg_PLVfeatures(top_features, PLV_Move_I, PLV_Rest_I, PLV_cut, row, col)
+function [PLV_Mahal_Sort, PLV_Mahal_Coord, PLV_Diff_Coord, PLV_Diff_Sort, trials_compared, PLV_Move_I, PLV_Rest_I] = meg_PLVfeatures(top_features, PLV_Move_I, PLV_Rest_I, PLV_cut, row, col)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 % If there are less Rest PLV indices than Move,
 
-    PLV_Rest_I = PLV_Rest_I';
-    PLV_Move_I = PLV_Move_I';
+%     PLV_Rest_I = PLV_Rest_I';
+%     PLV_Move_I = PLV_Move_I';
 
     if size(PLV_Rest_I,1) <= size(PLV_Move_I,1)
         trials_compared = size(PLV_Rest_I,1);  
@@ -53,13 +53,11 @@ function [PLV_Mahal_Sort, PLV_Mahal_Coord, PLV_Diff_Coord, PLV_Diff_Sort, trials
                 PLV_Mahal_Ind_Sort = PLV_Mahal_Ind(1:10);
                 % Mahal Coord are low to high
                 PLV_Mahal_Coord{c,1} = [col(PLV_Mahal_Ind_Sort), row(PLV_Mahal_Ind_Sort)];
-%                 PLV_Mahal_Coord{c,2} = cell(10,1);     
-                
-                % PLV_Mahal_Coord - Shows the PLV_Mahal_Sort Channels Interactions
-%                 for j = 1:10
-%                     PLV_Mahal_Coord{c,2}{j,1} = strcat("Channels ", string(PLV_Mahal_Coord{c}(j,1)), "-", string(PLV_Mahal_Coord{c}(j,2)));
-%                 end
-                tmp2 = [];
+                PLV_Mahal_Coord{c,2} = cell(10,1);     
+       % PLV_Mahal_Coord - Shows the PLV_Mahal_Sort Channels Interactions
+                for j = 1:10
+                    PLV_Mahal_Coord{c,2}{j,1} = strcat("Channels ", string(PLV_Mahal_Coord{c}(j,1)), "-", string(PLV_Mahal_Coord{c}(j,2)));
+                end
 
         end
     

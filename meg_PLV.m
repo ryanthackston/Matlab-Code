@@ -1,71 +1,75 @@
 function [meg_tw, Fmeg, PLV, PLV_Rest_I, PLV_Move_I, PLV_cut, row, col] = meg_PLV(meg, w, labels, trials, shift, tw, srate, freq_val, freq_width, PLV_Rest_I, PLV_Move_I)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-    for i = 1:( trials )
-           % If i == 1, save meg_tw{i,1} as the 1st 500 time points
+    for T = 1:( trials )
+           % If T == 1, save meg_tw{T,1} as the 1st 500 time points
            % else shift the 500 point time window every 100 points 
-           % meg_tw{i,1} --> channels x time_window
-               if i == 1
+           % meg_tw{T,1} --> channels x time_window
+               if T == 1
                    % store meg data in meg_tw, needs to iterate with i
                    
-                    meg_tw{i,1} = meg(:, (1:tw) )' .* w;
-                    meg_tw{i,2} = labels(tw);
+                    meg_tw{T,1} = meg(:, (1:tw) )' .* w;
+                    meg_tw{T,2} = labels(tw);
                else
-                    meg_tw{i,1} = meg( :, [(1+(shift*(i-1) )) : (tw+(shift*(i-1) ))], :)' .* w;
-                    meg_tw{i,2} = labels(tw+(shift*(i-1) ) );
+                    meg_tw{T,1} = meg( :, [(1+(shift*(T-1) )) : (tw+(shift*(T-1) ))], :)' .* w;
+                    meg_tw{T,2} = labels(tw+(shift*(T-1) ) );
                end
                
-               meg_tw{i,1} = meg_tw{i,1}';
+               meg_tw{T,1} = meg_tw{T,1}';
 
                % Check labels for Rest or Move
-                if meg_tw{i,2} == 1
-                     meg_tw{i,2} = 'Rest';
-                elseif meg_tw{i,2} == 2
-                    meg_tw{i,2} = 'Move';
+                if meg_tw{T,2} == 1
+                     meg_tw{T,2} = 'Rest';
+                elseif meg_tw{T,2} == 2
+                    meg_tw{T,2} = 'Move';
                 end 
                 
                 % Angles from Hilbert Transform to measure phase difference
                 % Fmeg is filtered MEG data
                 % -10000 values are messing up the Fmeg
-                Fmeg{i,1} = filterFGx(meg_tw{i,1}, srate, freq_val, freq_width);
+                Fmeg{T,1} = filterFGx(meg_tw{T,1}, srate, freq_val, freq_width);
                 % filtdata - chans x data
-                for j = 1: size(meg_tw{i,1}, 1)
-                    for k = 1: size(meg_tw{i,1},2)
+                for j = 1: size(meg_tw{T,1}, 1)
+                    for k = 1: size(meg_tw{T,1},2)
                         % angle is in radians - chans x data
                         % Check Hilbert Angle
-%                         angts(j,k) = angle(hilbert(Fmeg{i,1}(j,k) ) );
-                        angts(j,k) = angle(hilbert(Fmeg{i,1}(j,k)').');
+                        h(j,k) = hilbert( (Fmeg{T,1}(j,k))' );
+                        angts(j,k) = angle(hilbert( (Fmeg{T,1}(j,k))' ) );
+%                         angts(j,k) = angle(hilbert(Fmeg{T,1}(j,k)').');
                     end
                 end
                 
                 % Phase Locking Value
                 %Create variables
-                PLV{i,1} = zeros(size(meg_tw{i,1},1), size(meg_tw{i,1},1));
-%                 d{i,1} = zeros(size(meg_tw{i,1},1), size(meg_tw{i,1},1));
-                d{i,1} = zeros(size(meg_tw{i,1},1), 1);
-                B{i,1} = zeros(size(meg_tw{i,1},1), 1);
-                I{i,1} = zeros(size(meg_tw{i,1},1), 1);
-                d_sort{i,1} = zeros(size(10, 1));
+                PLV{T,1} = zeros(size(meg_tw{T,1},1), size(meg_tw{T,1},1));
+%                 d{T,1} = zeros(size(meg_tw{T,1},1), size(meg_tw{T,1},1));
+                d{T,1} = zeros(size(meg_tw{T,1},1), 1);
+                B{T,1} = zeros(size(meg_tw{T,1},1), 1);
+                I{T,1} = zeros(size(meg_tw{T,1},1), 1);
+                d_sort{T,1} = zeros(size(10, 1));
 
 
-                % chans
-                for chani = 1: size(meg_tw{i,1},2)
+                % chans 
+%                 for chani = 1: size(meg_tw{T,1},2)
+                    for chani = 1: size(angts,1)
                     % chans
-                    for chanj = 1: size(meg_tw{i,1},2)
+%                     for chanj = 1: size(meg_tw{T,1},2)
+                        for chanj = 1: size(angts,1)
                         tmpAi = angts(chani, :);
                         tmpAj = angts(chanj, :);
                         % This is the PLV formula
                         % PLV - chans x data
-                        PLV{i,1}(chani, chanj) = mean(abs(mean(exp(1i*(tmpAi-tmpAj )), 2)),1);
-                        PLV{i,2} = meg_tw{i,2};
+                        % 4996 trials, 17x17 PLV
+                        PLV{T,1}(chani, chanj) = mean(abs(mean(exp(1i*(tmpAi-tmpAj )), 2)),1);
+                        PLV{T,2} = meg_tw{T,2};
                             
                     end
                 end
                 
-                if PLV{i,2} == "Rest"
-                    PLV_Rest_I(i) = i;
-                elseif PLV{i,2} == "Move"
-                    PLV_Move_I(i) = i;
+                if PLV{T,2} == "Rest"
+                    PLV_Rest_I(T,1) = T;
+                elseif PLV{T,2} == "Move"
+                    PLV_Move_I(T,1) = T;
                 end
 
     end
@@ -88,8 +92,8 @@ tril_ind = find(tril_I == 1);
 % which is the median mahal distances.
  
 PLV_cut = cell(trials,1);
-for i = 1:trials
-    PLV_cut{i} = PLV{i}(tril_I);
+for T = 1:trials
+    PLV_cut{T} = PLV{T}(tril_I);
 end
 
 end
