@@ -48,8 +48,6 @@ function [PLV_Mahal_Sort, PLV_Mahal_Coord, PLV_Diff_Coord, PLV_Diff_Sort, trials
                 %PLV_Mahal_Sort saves the 10 largest Mahal distances between equivalent Rest and Move trials 
                 PLV_Mahal_Sort{c} = tmp2(1:10);
                 
-      % PROBLEM with PLV_Mahal_Ind - ALWAYS THE SAME VALUES!!! Max Values
-      % were always these interactions!!!
                 PLV_Mahal_Ind_Sort = PLV_Mahal_Ind(1:10);
                 % Mahal Coord are low to high
                 PLV_Mahal_Coord{c,1} = [col(PLV_Mahal_Ind_Sort), row(PLV_Mahal_Ind_Sort)];

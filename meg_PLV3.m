@@ -1,4 +1,4 @@
-function [meg_tw, Fmeg, PLV, PLV_Rest_I, PLV_Move_I, PLV_cut, row, col] = meg_PLV3(meg, w, labels, trials, shift, tw, srate, freq_val, freq_width, PLV_Rest_I, PLV_Move_I)
+function [meg_tw, Fmeg, PLV, PLV_Rest_I, PLV_Move_I, PLV_cut, row, col, tril_ind, tril_I] = meg_PLV3(meg, w, labels, trials, shift, tw, srate, freq_val, freq_width, PLV_Rest_I, PLV_Move_I)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
     for T = 1:( trials )
@@ -91,10 +91,10 @@ tril_ind = find(tril_I == 1);
 % from one class and compairing it with all the samples in the second class.
 % After this we do this with all the features, you have a "score" for each feature 
 % which is the median mahal distances.
- 
-PLV_cut = cell(trials,1);
+
+PLV_cut = zeros(trials, length(tril_ind) );
 for T = 1:trials
-    PLV_cut{T} = PLV{T}(tril_I);
+    PLV_cut(T, :) = PLV{T}(tril_I);
 end
 
 end

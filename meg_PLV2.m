@@ -91,10 +91,9 @@ tril_ind = find(tril_I == 1);
 % After this we do this with all the features, you have a "score" for each feature 
 % which is the median mahal distances.
  
-PLV_cut = cell(trials,1);
+% PLV_cut = cell(trials,1);
+PLV_cut = zeros(trials, length(tril_ind) );
 for T = 1:trials
-    PLV_cut{T} = PLV{T}(tril_I);
-end
-
+    PLV_cut(T, :) = PLV{T}(tril_I);
 end
 

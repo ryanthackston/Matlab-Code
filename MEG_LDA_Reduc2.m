@@ -40,16 +40,15 @@ trials = int64((size(meg, 2) - tw)/shift + 1);
 % Initialize Variables
 [meg_tw, Fmeg, meg_f, meg_fft_singleTW, x_abs, x_pow, x_pow_str, feat, alpha, beta, w, freq_val, freq_width, PLV, d, B, I, d_sort, d_s, PLV_Rest_I, PLV_Move_I] =meg_initvars(answers, meg, fs,nfft, freq, chans, trials);
 
-[meg_tw, Fmeg, PLV, PLV_Rest_I, PLV_Move_I, PLV_cut, row, col] = meg_PLV3(meg, w, labels, trials, shift, tw, srate, freq_val, freq_width, PLV_Rest_I, PLV_Move_I);
+[meg_tw, Fmeg, PLV, PLV_Rest_I, PLV_Move_I, PLV_cut, row, col, tril_ind, tril_I] = meg_PLV3(meg, w, labels, trials, shift, tw, srate, freq_val, freq_width, PLV_Rest_I, PLV_Move_I);
 
 top_features = 10;
 
-[PLV_features, PLV_Mahal, Median_Mahal, Median_Mahal_Sort, Median_Mahal_Ind, Top_Median_Mahal_Sort, Top_Median_Mahal_Ind, PLV_Diff_Coord, PLV_Diff_Sort, trials_compared, PLV_Move_I, PLV_Rest_I] = meg_PLVfeatures2(top_features, PLV_Move_I, PLV_Rest_I, PLV_cut, row, col);      
+[PLV_features, PLV_Mahal, Median_Mahal, Median_Mahal_Sort, Median_Mahal_Ind, Top_Median_Mahal_Sort, Top_Median_Mahal_Ind, PLV_Diff_Coord, PLV_Diff_Sort, trials_compared, PLV_Move_I, PLV_Rest_I] = meg_PLVfeatures2(top_features, trials, PLV, PLV_Move_I, PLV_Rest_I, PLV_cut, row, col, tril_ind);
 
-[Mahal_Vec, Class_Vec] = meg_featuresSorted(trials_compared, top_features, PLV_Mahal_Sort, PLV_Mahal_Coord);
+[Class_Vec] = meg_featuresSorted2(PLV, trials);
 
- [err] = meg_PLVclassify(Class_Vec, Mahal_Vec, meg_tw)
- 
+[err] = meg_PLVclassify2(Class_Vec, PLV_features)
  
 %  % Count frequency of channels being in top 10
 % %  z = [1:17]; 
