@@ -1,4 +1,4 @@
-function [blocks,stud, subj] = meg_blocks(answers)
+function [blocks,stud, subj] = meg_blocks_neu(answers)
 %UNTITLED7 Summary of this function goes here
 %   Detailed explanation goes here
 stud_type = {mical_imag_july2021(); mical_real_july2021() };  

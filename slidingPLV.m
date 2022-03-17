@@ -608,11 +608,11 @@ end
     set(handles.text_centfreq, 'String', ['Center Frequency = ' num2str(handles.slider_freq.Value) ' Hz']);
     
     freqwidt = get(handles.slider_width, 'Value');
-    set(handles.text_freqwidt, 'String', ['Frequency Width = ' num2str(handles.slider_width.Value)]);
+    set(handles.text_freqwidt, 'String', ['Frequency Width = ' num2str(handles.slider_width.Value) ' Hz' ]);
 
 
     tws = get(handles.slider_timewin_size, 'Value');
-    set(handles.text_timewinSize, 'String', ['Time Window Size = ' num2str(handles.slider_timewin_size.Value)]);
+    set(handles.text_timewinSize, 'String', ['Time Window Size = ' num2str(handles.slider_timewin_size.Value) ' Sec']);
 
     timestart = get(handles.slider_time, 'Value');
     set(handles.text_time, 'String', ['Starting Time = ' num2str(handles.slider_time.Value) ' Sec']);

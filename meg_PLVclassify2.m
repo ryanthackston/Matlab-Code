@@ -1,4 +1,4 @@
-function [err] = meg_PLVclassify2(Class_Vec, PLV_features)
+function [C err P logp coeff PredictedVsActualClasses testAcc] = meg_PLVclassify2(Class_Vec, PLV_features)
    
 
     folds = 5;
@@ -12,7 +12,11 @@ function [err] = meg_PLVclassify2(Class_Vec, PLV_features)
                                                                     classify( PLV_features(testIdx(i,:),:), ...
                                                                     PLV_features(trainIdx(i,:),:) , ...
                                                                     Class_Vec(trainIdx(i,:),:), 'linear' );
+                                                                
+            PredictedVsActualClasses = strcmp(C{i}, Class_Vec(testIdx(i,:)));
+            
+            testAcc(i) = sum(PredictedVsActualClasses)/length(PredictedVsActualClasses);                                                    
+                                                                
         end
-        
 end
 

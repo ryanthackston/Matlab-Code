@@ -1,4 +1,4 @@
-function [answers] = meg_answer(definput)
+function [answers questions] = meg_answer(definput)
 %UNTITLED4 Summary of this function goes here
 %   Detailed explanation goes here
 

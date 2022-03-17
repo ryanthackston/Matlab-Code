@@ -1,5 +1,3 @@
-%% filterFGx must be modified to account for differing frequencies. Right now PLV only measures from 1 frequency
-
 function varargout = slidingPLV2(varargin)
 % SLIDINGPLV2 MATLAB code for slidingPLV2.fig
 %      SLIDINGPLV2, by itself, creates a new SLIDINGPLV2 or raises the existing
@@ -24,7 +22,7 @@ function varargout = slidingPLV2(varargin)
 
 % Edit the above text to modify the response to help slidingPLV2
 
-% Last Modified by GUIDE v2.5 30-Apr-2020 04:39:00
+% Last Modified by GUIDE v2.5 26-Feb-2022 19:06:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -61,8 +59,6 @@ function slidingPLV2_OpeningFcn(hObject, eventdata, handles, varargin)
 % LOAD THE DATA
 % Load the data
 % Motor img - calib
-global MIcont answers stud subj blocks RestOnset MoveOnset
-
 MIcal = {[('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S1_Block1_imag_calib.mat');...
               ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S1_Block2_imag_calib.mat')],...
               [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S2_Block1_imag_calib.mat');...
@@ -103,20 +99,17 @@ MIcont = {[('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control
             
 questions = { '\fontsize{12} Select Task: [1] Motor Img Calib [2] Motor Img Control';...
                     '\fontsize{12} Which subject number would you like to analyze (1-9)?';...
-                    '\fontsize{12} What frequency would you like to analyze first (Hz)?';...
-                    '\fontsize{12} What frequency would like to analyze last (Hz)?';...
+                    '\fontsize{12} What frequency would you like to analyze first?';...
+                    '\fontsize{12} What frequency would like to analyze last?';...
                     '\fontsize{12} How much should the frequency increment by?';...
                     '\fontsize{12} What should be the frequency width for the filter?';...
-                    '\fontsize{12} What should be the time window size (sec)?';...
-                    '\fontsize{12} What time do you want to start at (sec)?';...
-                    '\fontsize{12} Do you want to arrange filtered data by time points [1] or trials [2]?';...
-                    '\fontsize{12} What will be the size of the arrangement?'};
+                    '\fontsize{12} What should be the time window size (seconds)?';...
+                    '\fontsize{12} What time do you want to start at?'};
 
-
-definput = cell(10,1);
-definput(:) = [{'1'};{'9'};{'8.5'};{'12'};{'0.5'};{'3'};{'0.5'};{'0'};{'2'};{'50'}];
-options.Interpreter = 'tex';        
-answers = inputdlg(questions, 'Parameters for PLV', [1 85], definput, options );
+definput = cell(8,1);
+definput(:) = [{'1'};{'9'};{'23.1'};{'26'};{'0.5'};{'4'};{'1'};{'1'}];
+options.Interpreter = 'tex';           
+answers = inputdlg(questions, 'Parameters for PLV', [1 70], definput, options )
 
             
 % Add as input for later
@@ -125,47 +118,13 @@ stud = {MIcal; MIcont};
 stud = stud{str2double(answers{1})};
 subj = str2double(answers{2});
 blocks = [load(stud{subj}(1,:)); load(stud{subj}(2,:))]; 
+% Motot img - control
+% blocks = [load('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S2_Block1_imag_control.mat')...
+%           load('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S2_Block2_imag_control.mat')];
 
-RestOnset = [blocks(1).RestOnset(:); blocks(2).RestOnset(:)+length(blocks(1).meg)];
-MoveOnset = [blocks(1).MoveOnset(:); blocks(2).MoveOnset(:)+length(blocks(1).meg)];
-        try
-            blocks.MoveOffset;
-            
-            for i = 1:2
-                % Make Equal Onset, Offset, & trialEnd indexes
-                if length(blocks(i).MoveOnset) ~= length(blocks(i).MoveOffset)
-                    blocks(i).trialEnd(length(blocks(i).trialEnd) + 1) = length(blocks(i).meg);                        
-                    blocks(i).MoveOffset(length(blocks(i).MoveOffset) + 1) = length(blocks(i).meg);
-                elseif length(blocks(i).RestOnset) ~= length(blocks(i).RestOffset)
-                      blocks(i).trialEnd(length(blocks(i).trialEnd) + 1) = length(blocks(i).meg);   
-                      blocks(i).RestOffset(length(blocks(i).RestOffset) + 1) = length(blocks(i).meg);
-                end
-            end
-            
-            % Combine RestOffset, MoveOffset, trialStart, trialEnd,
-            % trialLength index time points for 
-            RestOffset = [blocks(1).RestOffset(:); blocks(2).RestOffset(:)+length(blocks(1).meg)];
-            MoveOffset = [blocks(1).MoveOffset(:); blocks(2).MoveOffset(:)+length(blocks(1).meg)];
-            trialStart = [blocks(1).trialStart(:); blocks(2).trialStart(:)+length(blocks(1).meg)];
-            trialEnd = [blocks(1).trialEnd(:); blocks(2).trialEnd(:)+length(blocks(1).meg)];       
-            trialLength = cell(size(trialStart,1),2);
-            
-            for i = 1:size(trialStart,1)
-                    trialLength{i,1} = trialEnd(i) - trialStart(i);  
-
-                    if any(trialStart(i) == MoveOnset)
-                       trialLength{i, 2}= 'MoveOnset';
-                    elseif any(trialStart(i) == RestOnset)
-                        trialLength{i, 2} = 'RestOnset';
-                    end
-            end
-            % For visuals
-%             trials = cat(2, num2cell(trialStart), num2cell(trialEnd), trialLength(:, 1), trialLength(:, 2));
-        catch
-            disp('There is no MoveOffset or RestOffset in these trial blocks');
-         end
               
-
+RestOnset = [blocks(1).RestOnset(:); blocks(2).RestOnset(:)+253000];
+MoveOnset = [blocks(1).MoveOnset(:); blocks(2).MoveOnset(:)+253000];
 
 % Delete unused channels
 blocks(1).meg(:,[4 6 7 11 15 16 20 23]) = [];
@@ -195,14 +154,22 @@ megMat(16,:) = meg(13,:);
 megMat(17,:) = meg(2,:);
 meg = megMat(:,:);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% NEED TO CUT OUT EXTRA DATA FOR MOTOR IMG CONTROL
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Rearrange data to be channels x time points x trials 
+% data(:, 1:5000, :) time points is rest task. 
+% data(:, 5001:10000, :) time points is move task.
+megR3d = zeros(17,5000,size(RestOnset,1));
+megM3d = zeros(17,5000,size(MoveOnset,1));
+data = zeros(17,10000,size(RestOnset,1));
+
+% motor img - calib
+for i = 1:size(RestOnset,1)
+    megR3d(:,:,i) = meg(:,(RestOnset(i):MoveOnset(i)-1));
+    megM3d(:,:,i) = meg(:,(MoveOnset(i):MoveOnset(i)+4999));
+    data(:,:,i) = [megR3d(:,:,i) megM3d(:,:,i)];
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % PARAMETERS
-
-global begF endF stepf srate
 
 % Beginning frequency to analyze
 begF = str2double(answers{3});
@@ -213,20 +180,22 @@ stepf = str2double(answers{5});
 fi = [stepf/(endF-begF) 1.0];
 %FWHM for filterdat
 freqwidt = str2double(answers{6});
-fwMax = 5.0;
+fwMax = 2.0;
 fwMin = 0.1;
 fwi = [ 0.2/(fwMax-fwMin) 1.0];
 % time window parameters (in seconds) - leave out 1st sec for each task
 tws = str2double(answers{7});
 timewin = cell(2,1);
 timestart = str2double(answers{8});
-
+timewin{1} = [timestart  timestart+tws];
+timewin{2} = [timestart+5 timestart+5+tws];
 % time step increment
-tstepi = [ 0.5/(5.0-0.0) 1.0];
+tstepi = [ 0.5/(5.0-0.1) 1.0];
 % sample rate
 srate = 1000;
 % Frequencies to analyze
 % freqs = linspace(begF,endF,incr);
+
 
 set(handles.slider_freq, 'Max', endF);
 set(handles.slider_freq, 'Min', begF);
@@ -243,121 +212,51 @@ freqwidt = get(handles.slider_width, 'Value');
 set(handles.text_freqwidt, 'String', ['Frequency Width = ' num2str(handles.slider_width.Value)]);
 
 set(handles.slider_timewin_size, 'Max', 5.0);
-set(handles.slider_timewin_size, 'Min', 0.0);
+set(handles.slider_timewin_size, 'Min', 0.1);
 set(handles.slider_timewin_size, 'Value', tws);
 set(handles.slider_timewin_size, 'SliderStep', tstepi);
 timeWinSize = get(handles.slider_timewin_size, 'Value');
 set(handles.text_timewinSize, 'String', ['Time Window Size = ' num2str(handles.slider_timewin_size.Value)]);
 
 set(handles.slider_time, 'Max', 5.0);
-set(handles.slider_time, 'Min', 0.0);
+set(handles.slider_time, 'Min', 0.1);
 set(handles.slider_time, 'Value', timestart);
 set(handles.slider_time, 'SliderStep', tstepi);
 timeWin = get(handles.slider_time, 'Value');
 set(handles.text_time, 'String', ['Starting Time = ' num2str(handles.slider_time.Value) ' Sec']);
 
-%% 2 sec blank screen or 1 sec in beginning? 
-%% If trial success, 2 or 1 sec pause at the end?
-%% Lowest trial length: Rest 3901, Max Length: 13101
-%% One Move trial at 12401
-%% Current: Cut 1000 points before, 2100 points after
-% Start with {Trials} x [ Channels x Time Points ]
-% Rearrange data to be channels x time points x trials in for loop
-global data megM3d megR3d roundnum
-
-if all(all( convertCharsToStrings(stud{subj}) == convertCharsToStrings(MIcont{subj}), 2))
-    megR3d = cell(size(MoveOnset, 1), 1);
-    megM3d = cell(size(MoveOnset, 1), 1);
-
-    filtdatM = [];
-    filtdatR = [];
-    % Cut out unrelated data in trials
-    % 1 second before, 2 seconds after
-    for i = 1:size(RestOnset, 1)
-        % Rest
-        megR3d{i} = meg( :, (RestOnset(i) + 1000) : RestOffset(i)-2000 );
-        % Move
-        megM3d{i} = meg( :, (MoveOnset(i) + 1000) : MoveOffset(i)-2000 );
-        
-        % filterFGx - Frequency domain narrow-band filter Gaussian
-        filtdatR =  [filtdatR filterFGx(megR3d{i}, srate, handles.slider_freq.Value,handles.slider_width.Value)];
-        filtdatM =  [filtdatM filterFGx(megM3d{i}, srate, handles.slider_freq.Value, handles.slider_width.Value)];
-    end
-
-    % Make filtered move and rest data the same size, Round down from roundnum on
-    % the smallest matrix
-            roundnum = str2double(answers{10});
-            if size(filtdatR,2) <= size(filtdatM,2)
-                    filtdatR = filtdatR(: , 1:roundnum*(floor(length(filtdatR)/roundnum)));
-                    filtdatM = filtdatM(: , 1:roundnum*(floor(length(filtdatR)/roundnum)));
-            else
-                    filtdatM = filtdatM(: , 1:roundnum*(floor(length(filtdatM)/roundnum)));
-                    filtdatR = filtdatR(: , 1:roundnum*(floor(length(filtdatM)/roundnum)));
-            end
-            
-        if str2double(answers{9}) == 1
-             % Round by time points
-               filtdat = [reshape(filtdatR, size(filtdatR,1), roundnum, [])       reshape(filtdatM, size(filtdatM,1), roundnum, [])];
-        elseif str2double(answers{9}) == 2
-            % Round by trials
-              filtdat = [reshape(filtdatR, size(filtdatR,1), [] , roundnum)      reshape(filtdatM, size(filtdatR,1), [], roundnum)];      
-        end
-    
-elseif all(all( convertCharsToStrings(stud{subj}) ~= convertCharsToStrings(MIcont{subj}), 2))
-    megR3d = zeros(17,5000,size(RestOnset,1));
-    megM3d = zeros(17,5000,size(MoveOnset,1));
-    data = zeros(17,10000,size(RestOnset,1));
-
-    % motor img - calib
-    for i = 1:size(RestOnset,1)
-        megR3d(:,:,i) = meg(:,(RestOnset(i):MoveOnset(i)-1));
-        megM3d(:,:,i) = meg(:,(MoveOnset(i):MoveOnset(i)+4999));
-        data(:,:,i) = [megR3d(:,:,i) megM3d(:,:,i)];
-    end
-    filtdat = filterFGx(data, srate, handles.slider_freq.Value, handles.slider_width.Value);
-end
-
 
 % time vector
-timevec = 0+1/srate:(1/(srate)): size(filtdat,2)/srate;
+timevec = 0+1/srate:(1/(srate)):10;
 
-% Rest Time Window - default 0 to 0.5 sec
-timewin{1} = [timeWin  timeWin+timeWinSize];
-% Move Time Window - default 5 to 5.5 sec
-timewin{2} = [timeWin+((size(filtdat,2)/2)/srate)    timeWin+timeWinSize+((size(filtdat,2)/2)/srate)];
-
-% convert to time indices
-% Rest time indices
+% convert to time indices (sec)
 tidx1 = dsearchn(timevec',timewin{1}');
-% Move time indices
 tidx2 = dsearchn(timevec',timewin{2}');
 
 synchmat = zeros(2,17,17);
+filtdat = filterFGx(data,srate, centfreq, freqwidt);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % CREATE INITIAL PLOTS HERE
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert
 
 % REST SYNCHRONIZATION INITIAL PLOT
         handles.restTW.XLim = [ 0.5 17.5 ];
         handles.restTW.YLim = [ 0.5 17.5 ];
-        handles.restTW.CLimMode = 'manual'
-        handles.restTW.CLim = [0 0.9];
         colorbar(handles.restTW)
-        handles.restTW.Colormap = lbmap(500, 'RedBlue');
+        handles.restTW.Colormap = lbmap(handles.restTW, 'RedBlue')
+        handles.restTW.CLim = [0 0.9];
         % Make the axes square
         handles.restTW.PlotBoxAspectRatio = [1 1 1];
         % drawGrid(handles.restTW, 0.75);
-        handles.plotR = imagesc( handles.restTW, 'CData', squeeze(synchmat(1,:,:)));
+        handles.plotR = imagesc( handles.restTW, 'CData', squeeze(synchmat(1,:,:))) 
         handles.plotR.Parent.Title.String= [ 'Synch: ' num2str(timewin{1}(1)) '-' num2str(timewin{1}(2)) ' Sec, '  '? \pm ? Hz'];
-        handles.plotR.Parent.Title.Position = [9.0000 17.85 0];
-        handles.plotR.Parent.CLim = [0 0.9];
+        handles.plotR.Parent.Title.Position = [9.0000 17.85 0]
         % Plot grid lines 
         hold (handles.plotR.Parent,'on');
             for j = 1:17
-                pRy{j} = plot(handles.plotR.Parent, [0.5, 17.5],[j-0.5, j-0.5],'k-');
-                pRx{j} = plot(handles.plotR.Parent,[j-0.5, j-0.5],[0.5, 17.5],'k-');
+                pRy{j} = plot(handles.plotR.Parent, [0.5, 18.5],[j-0.5, j-0.5],'k-');
+                pRx{j} = plot(handles.plotR.Parent,[j-0.5, j-0.5],[0.5, 18.5],'k-');
             end
         hold (handles.plotR.Parent,'off')
 
@@ -365,16 +264,14 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert
 % MOVEMENT SYNCHRONIZATION INITIAL PLOT
         handles.moveTW.XLim = [0.5 17.5];
         handles.moveTW.YLim = [0.5 17.5];
-        handles.moveTW.CLimMode = 'manual'
-        handles.moveTW.CLim = [0 0.9];
         colorbar(handles.moveTW)
-        handles.moveTW.Colormap = lbmap(500, 'RedBlue');
+        handles.moveTW.Colormap = lbmap(handles.moveTW, 'RedBlue')
+        handles.moveTW.CLim = [0 0.9];
         % Make the axes square
         handles.moveTW.PlotBoxAspectRatio = [1 1 1];
         handles.plotM = imagesc( handles.moveTW, 'CData', squeeze(synchmat(2,:,:)));
         handles.plotM.Parent.Title.String = [ 'Synch: ' num2str(timewin{2}(1)) '-' num2str(timewin{2}(2)) ' Sec, '  '? \pm ? Hz'];
-        handles.plotM.Parent.Title.Position = [9.0000 17.85 0];
-        handles.plotM.Parent.CLim = [0 0.9];
+        handles.plotM.Parent.Title.Position = [9.0000 17.85 0]
         % Plot grid lines 
         hold (handles.plotM.Parent,'on')
             for j = 1:17
@@ -387,16 +284,14 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert
 % PHASE DIFFERENCE SYNCHRONIZATION PLOT
         handles.phaseDif.XLim = [0.5 17.5];
         handles.phaseDif.YLim = [0.5 17.5];
-        handles.phaseDif.CLimMode = 'manual';
         colorbar(handles.phaseDif)
-        handles.phaseDif.Colormap = lbmap(500, 'RedBlue');
-        handles.phaseDif.CLim = [-.1 .1];
+        handles.phaseDif.Colormap = lbmap(handles.phaseDif, 'RedBlue')
+        handles.phaseDif.CLim = [-1 1];
         % Make the axes square
         handles.phaseDif.PlotBoxAspectRatio = [1 1 1];
-        handles.plotD = imagesc( handles.phaseDif, 'CData', squeeze(diff(synchmat)));
-        handles.plotD.Parent.Title.String = 'Phase Synchronization Difference: Move - Rest';
-        handles.plotD.Parent.Title.Position = [9.0000 17.85 0];
-        handles.plotR.Parent.CLim = [-.1 .1];        
+        handles.plotD = imagesc( handles.phaseDif, 'CData', squeeze(diff(synchmat)))
+        handles.plotD.Parent.Title.String = ['Phase Synchronization Difference: Move - Rest'];
+        handles.plotD.Parent.Title.Position = [9.0000 17.85 0]
         hold (handles.plotD.Parent,'on');
             for j = 1:17
                 pDy{j} = plot(handles.phaseDif, [0.5,18.5],[j-.5,j-.5],'k-');
@@ -405,23 +300,20 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert
         hold (handles.plotD.Parent,'off');
 
 % KRUSKAL WALLIS STASTICALLY SIGNIFICANT PHASE SYNCHRONIZATION
-        % GUI Limits, colors
         handles.krusWal.XLim = [0.5 17.5];
         handles.krusWal.YLim = [0.5 17.5];
-        handles.moveTW.CLimMode = 'manual';
         colorbar(handles.krusWal)
-        handles.krusWal.Colormap = lbmap(500, 'RedBlue');
+        handles.krusWal.Colormap = lbmap(handles.krusWal, 'RedBlue')
         handles.krusWal.CLim = [0    0.01];
         % Mark Statistically Significant Phase Synchs in Kruskal-Wallis Test
-        hori = repmat(1:size(filtdat,1),size(filtdat,1),1);
+        hori = repmat(1:size(data,1),size(data,1),1);
         vert = hori';
         g = text(hori(:), vert(:), ' ', 'HorizontalAlignment', 'Center', 'Color','k', 'FontWeight', 'bold', 'Parent', handles.krusWal);
         % Make the axes square
         handles.krusWal.PlotBoxAspectRatio = [1 1 1];
-        handles.plotSS = imagesc( handles.krusWal, 'CData', squeeze(diff(synchmat)));
-        handles.plotSS.Parent.Title.String = 'Kruskal-Wallis Stat. Sig. \alpha = 0.05/17';
-        handles.plotSS.Parent.Title.Position = [9.0000 17.85 0];
-        handles.plotSS.Parent.CLim = [0 0.01];        
+        handles.plotSS = imagesc( handles.krusWal, 'CData', squeeze(diff(synchmat)))
+        handles.plotSS.Parent.Title.String = ['Kruskal-Wallis Stat. Sig. \alpha = 0.05/17'];
+        handles.plotSS.Parent.Title.Position = [9.0000 17.85 0]
         hold (handles.plotSS.Parent,'on');
             for j = 1:17
                 pSy{j} = plot(handles.krusWal, [.5, 18.5],[j-.5,j-.5],'k-');
@@ -429,33 +321,37 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert
             end
         hold (handles.plotSS.Parent,'off');
 
+
+
+
+
+
+
+
+
+% (In my code I want to compute PLV here)
     % angle time-series
-    angts = zeros(size(filtdat));
+    angst = zeros(size(filtdat));
     
-% (In my code I want to compute Phase-Locking Value here)
-    %     How do I take out this for loop?
-    for triali=1:size(filtdat,3)
+%     How do I take out this for loop?
+    for triali=1:size(data,3)
         % Applying hilbert transform to matrix inputs, phase angles should be
         % sawtooth slanted to the right
-        angts(:,:,triali) = angle(hilbert(squeeze(filtdat(:,:,triali))').');
+        angst(:,:,triali) = angle(hilbert(squeeze(filtdat(:,:,triali))').');
         % Plot angle time series and check phase angles
-        % figure(5); plot(angts(5,:,10));
+        % figure(5); plot(angst(5,:,10));
     end
     
-    synchmat1 = zeros( (size(filtdat,3)), (size(filtdat,1)), (size(filtdat,1)) );
-    synchmat2 = zeros( (size(filtdat,3)), (size(filtdat,1)), (size(filtdat,1)) );
-
-    % Is it possible to take out these for loops?
-    nchans = size(filtdat,1);
+    nchans = size(data,1);
      for chani=1:nchans
         for chanj=1:nchans
-            for tria = 1:size(filtdat,3)
+            for tria = 1:size(data,3)
 
                 %%% time window 1
                 % extract angles in channel i, all trials
-                tmpAi = angts(chani,tidx1(1):tidx1(2),tria);
+                tmpAi = angst(chani,tidx1(1):tidx1(2),tria);
                 % extract angles in channel j all trials
-                tmpAj = angts(chanj,tidx1(1):tidx1(2),tria);
+                tmpAj = angst(chanj,tidx1(1):tidx1(2),tria);
                 % compute synchronization between the two channels
                 % abs( mean( eulers formula( phase angle diff)), 2nd dim: time points)
                 trialsynch = abs(mean(exp(1i*( tmpAi-tmpAj )),2));
@@ -464,8 +360,8 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert
 
                 %%% time window 2
                 % extract angles
-                tmpAi = angts(chani,tidx2(1):tidx2(2),tria);
-                tmpAj = angts(chanj,tidx2(1):tidx2(2),tria);
+                tmpAi = angst(chani,tidx2(1):tidx2(2),tria);
+                tmpAj = angst(chanj,tidx2(1):tidx2(2),tria);
                 % Phase Locking Value on each trial
                 trialsynch = abs(mean(exp(1i*( tmpAi-tmpAj )),2));
                 % average over trials - synchmat 2nd Time Window
@@ -477,47 +373,44 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert
     % synchmat Difference - Time Window x channels x channels 
     synchmatD = [mean(synchmat1,1); mean(synchmat2,1)];
 %     synchmatDif(1,chani,chanj) = mean((synchmat2(:,chani,chanj) - synchmat1(:,chani,chanj)),1);
-    diffS = squeeze(abs(synchmatD(2,:,:) - synchmatD(1,:,:)));
-%     diffS == diff(synchmatD)
+    % diffS = synchmatD(2,:,:) - synchmatD(1,:,:);
+    % diffS == diff(synchmatD)
 %     subplot(1,4,1)
 %     title([ 'Synch: ' num2str(timewin{1}(1)) '-' num2str(timewin{1}(2)) ' Sec, ' num2str(centfreq) ' Hz \pm ' num2str(freqwidt)]);
 
 %% UPDATE THE IMAGES
 % Update Rest Trials Plot
-        handles.plotR = imagesc( handles.restTW, 'CData', squeeze(mean(synchmat1,1))' );
+        handles.plotR = imagesc( handles.restTW, 'CData', squeeze(mean(synchmat1,1))' ) 
         handles.plotR.Parent.Title.String =  [ 'Rest Phase Synch: ' num2str(timewin{1}(1)) '-' num2str(timewin{1}(2)) ' Sec, ' num2str(centfreq) ' \pm ' num2str(freqwidt) ' Hz'];
         handles.plotR.Parent.Title.FontSize = 13.5;
-        handles.plotR.Parent.CLim = [0 0.9];
-        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17] = deal(pRx{:});
+        handles.plotM.Parent.Title.FontSize = 13.5;
+        [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pRx{:});
         uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
-        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17] = deal(pRy{:});
+        [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pRy{:});
         uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
 
 % Update Move Trials Plot
-        handles.plotM = imagesc( handles.moveTW, 'CData', squeeze(mean(synchmat2,1)) );
+        handles.plotM = imagesc( handles.moveTW, 'CData', squeeze(mean(synchmat2,1)) )
         handles.plotM.Parent.Title.String =  [ 'Move Phase Synch: ' num2str(timewin{2}(1)) '-' num2str(timewin{2}(2)) ' Sec, ' num2str(centfreq) ' Hz \pm ' num2str(freqwidt) ' Hz'];
         handles.plotM.Parent.Title.FontSize = 13.5;
-        handles.plotM.Parent.CLim = [0 0.9];
-        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17] = deal(pMx{:});
+        [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pMx{:});
         uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
-        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17] = deal(pMy{:});
+        [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pMy{:});
         uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
   
 % Update Phase Difference Plot
-        handles.plotD = imagesc( handles.phaseDif, 'CData', squeeze(diff(synchmatD)) ); 
+        handles.plotD = imagesc( handles.phaseDif, 'CData', squeeze(diff(synchmatD)) ) 
 %         handles.plotD.Parent.Title.String = ['Phase Synchronization Difference: Move - Rest'];
         handles.plotD.Parent.Title.FontSize = 13.5;
-        handles.plotD.Parent.CLim = [-0.1 0.1];
-        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17] = deal(pDx{:});
+        [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pDx{:});
         uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
-       [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17] = deal(pDy{:});
+        [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pDy{:});
         uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
     
     % Kruskal-Wallis test on Phase-Locking Value data
-    krusP = zeros(17,17);
     for ii = 1:17
         for jj = 1:17
-            [krusP(ii,jj)] = kruskalwallis([synchmat1(:,ii,jj) synchmat2(:,ii,jj)], [], 'off');
+            [krusP(ii,jj), tbl{ii,jj}, stats{ii,jj}] = kruskalwallis([synchmat1(:,ii,jj) synchmat2(:,ii,jj)], [], 'off');
         end
     end
     % Arrange kruskal-wallis values for labeling in image
@@ -528,18 +421,17 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert
 %     ssi = find(ss);
     
 % Update Kruskal-Wallis Statistical Test Plot
-        handles.plotSS = imagesc( handles.krusWal, 'CData', krusP );
+        handles.plotSS = imagesc( handles.krusWal, 'CData', krusP )
         handles.plotSS.Parent.Title.FontSize = 13.5;
-        handles.plotSS.Parent.CLim = [0 0.01];
-        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17] = deal(pSx{:});
+        [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pSx{:});
         uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
-        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17] = deal(pSy{:});
+        [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pSy{:});
         uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
     
     for tt = 1:length(g)
         % Reset previous stat sig labels
         g(tt).String = ' ';
-        alphaT = 0.05/size(filtdat,1);
+        alphaT = 0.05/size(data,1);
         if str2double(kk{tt})<= alphaT
             % Label images that are stat sig
              g(tt) = text(hori(tt), vert(tt), 'X', 'HorizontalAlignment', 'Center', 'Color','w', 'FontWeight', 'bold', 'FontSize', 12.5, 'Parent', handles.krusWal);
@@ -556,8 +448,6 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
-
-'done'
 
 % UIWAIT makes slidingPLV2 wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -665,86 +555,189 @@ end
 
 function updatePhaseSync(handles)
 
-global MIcont answers stud subj blocks RestOnset MoveOnset
-global begF endF stepf
-global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert
-global data srate megM3d megR3d roundnum
+    blocks = [load('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S9_Block1_imag_calib.mat')...
+                  load('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S9_Block2_imag_calib.mat')];
+              
+              RestOnset = [blocks(1).RestOnset(:); blocks(2).RestOnset(:)+253000];
+MoveOnset = [blocks(1).MoveOnset(:); blocks(2).MoveOnset(:)+253000];
+
+% Delete unused channels
+blocks(1).meg(:,[4 6 7 11 15 16 20 23]) = [];
+blocks(2).meg(:,[4 6 7 11 15 16 20 23]) = [];
+
+meg = [blocks(1).meg; blocks(2).meg];
+meg = meg';
+
+% Rearrange the channel numbers to go sequentially from top-left to bottom-right
+megMat = [];
+megMat(1,:) = meg(12,:);
+megMat(2,:) = meg(7,:);
+megMat(3,:) = meg(6,:);
+megMat(4,:) = meg(17,:);
+megMat(5,:) = meg(14,:);
+megMat(6,:) = meg(8,:);
+megMat(7,:) = meg(11,:);
+megMat(8,:) = meg(16,:);
+megMat(9,:) = meg(5,:);
+megMat(10,:) = meg(10,:);
+megMat(11,:) = meg(4,:);
+megMat(12,:) = meg(15,:);
+megMat(13,:) = meg(9,:);
+megMat(14,:) = meg(3,:);
+megMat(15,:) = meg(1,:);
+megMat(16,:) = meg(13,:);
+megMat(17,:) = meg(2,:);
+meg = megMat(:,:);
+
+% Rearrange data to be channels x time points x trials 
+% data(:, 1:5000, :) time points is rest task. 
+% data(:, 5001:10000, :) time points is move task.
+megR3d = zeros(17,5000,size(RestOnset,1));
+megM3d = zeros(17,5000,size(MoveOnset,1));
+data = zeros(17,10000,size(RestOnset,1));
+
+% motor img - calib
+for i = 1:size(RestOnset,1)
+    megR3d(:,:,i) = meg(:,(RestOnset(i):MoveOnset(i)-1));
+    megM3d(:,:,i) = meg(:,(MoveOnset(i):MoveOnset(i)+4999));
+    data(:,:,i) = [megR3d(:,:,i) megM3d(:,:,i)];
+end
 
     % get the new parameter values
     centfreq = get(handles.slider_freq, 'Value');
     set(handles.text_centfreq, 'String', ['Center Frequency = ' num2str(handles.slider_freq.Value) ' Hz']);
     
     freqwidt = get(handles.slider_width, 'Value');
-    set(handles.text_freqwidt, 'String', ['Frequency Width = ' num2str(handles.slider_width.Value)]);
+    set(handles.text_freqwidt, 'String', ['Frequency Width = ' num2str(handles.slider_width.Value) ' Hz' ]);
 
 
     tws = get(handles.slider_timewin_size, 'Value');
-    set(handles.text_timewinSize, 'String', ['Time Window Size = ' num2str(handles.slider_timewin_size.Value)]);
+    set(handles.text_timewinSize, 'String', ['Time Window Size = ' num2str(handles.slider_timewin_size.Value) ' Sec']);
 
     timestart = get(handles.slider_time, 'Value');
     set(handles.text_time, 'String', ['Starting Time = ' num2str(handles.slider_time.Value) ' Sec']);
 
-%%% CHANGE FOR LATER! +5 MUST REPRESENT CONTROL AS WELL
-if all(all( convertCharsToStrings(stud{subj}) == convertCharsToStrings(MIcont{subj}), 2))
+    timewin{1} = [timestart  timestart+tws];
+    timewin{2} = [timestart+5 timestart+5+tws];
 
-        filtdatM = [];
-        filtdatR = [];
-        filtdat = [];
-    for i = 1:size(megR3d,1)
-        filtdatR =  [filtdatR filterFGx(megR3d{i}, srate, handles.slider_freq.Value,handles.slider_width.Value)];
-        filtdatM =  [filtdatM filterFGx(megM3d{i}, srate, handles.slider_freq.Value, handles.slider_width.Value)];
-    end
-        % Filter data second to filter out edge artifacts
-        % Make filtered move and rest data the same size, Round down from 50 on
-        % the smallest matrix
-        
-            if size(filtdatR,2) <= size(filtdatM,2)
-                    filtdatR = filtdatR(: , 1:roundnum*(floor(length(filtdatR)/roundnum)));
-                    filtdatM = filtdatM(: , 1:roundnum*(floor(length(filtdatR)/roundnum)));
-            else
-                    filtdatM = filtdatM(: , 1:roundnum*(floor(length(filtdatM)/roundnum)));
-                    filtdatR = filtdatR(: , 1:roundnum*(floor(length(filtdatM)/roundnum)));
+    srate = 1000;
+    % time vector
+    timevec = 0+1/srate:(1/(srate)):10;
+
+
+    % convert to time indices (sec)
+    tidx1 = dsearchn(timevec',timewin{1}');
+    tidx2 = dsearchn(timevec',timewin{2}');
+
+    synchmat = zeros(2,17,17);
+    filtdat = filterFGx(data,srate, centfreq, freqwidt);
+    
+    
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % PLOTS
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % REST SYNCHRONIZATION INITIAL PLOT
+        handles.restTW.XLim = [ 0.5 17.5 ];
+        handles.restTW.YLim = [ 0.5 17.5 ];
+        colorbar(handles.restTW)
+        handles.restTW.Colormap = lbmap(handles.restTW, 'RedBlue')
+        handles.restTW.CLim = [0 0.9];
+        % Make the axes square
+        handles.restTW.PlotBoxAspectRatio = [1 1 1];
+        % drawGrid(handles.restTW, 0.75);
+        handles.plotR = imagesc( handles.restTW, 'CData', squeeze(synchmat(1,:,:))) 
+        handles.plotR.Parent.Title.String= [ 'Synch: ' num2str(timewin{1}(1)) '-' num2str(timewin{1}(2)) ' Sec, '  '? \pm ? Hz'];
+        handles.plotR.Parent.Title.Position = [9.0000 17.85 0]
+        % Plot grid lines 
+        hold (handles.plotR.Parent,'on');
+            for j = 1:17
+                pRy{j} = plot(handles.plotR.Parent, [0.5, 18.5],[j-0.5, j-0.5],'k-');
+                pRx{j} = plot(handles.plotR.Parent,[j-0.5, j-0.5],[0.5, 18.5],'k-');
             end
-            
-        if str2double(answers{9}) == 1
-            % Round by time points
-            filtdat = [reshape(filtdatR, 17, roundnum, []) reshape(filtdatM, 17, roundnum, [])];
-        elseif str2double(answers{9}) == 2
-            % Round by trials
-            filtdat = [reshape(filtdatR, 17, [] , roundnum) reshape(filtdatM, 17, [], roundnum)];
-        end
+        hold (handles.plotR.Parent,'off')
+
+
+% % MOVEMENT SYNCHRONIZATION INITIAL PLOT
+        handles.moveTW.XLim = [0.5 17.5];
+        handles.moveTW.YLim = [0.5 17.5];
+        colorbar(handles.moveTW)
+        handles.moveTW.Colormap = lbmap(handles.moveTW, 'RedBlue')
+        handles.moveTW.CLim = [0 0.9];
+        % Make the axes square
+        handles.moveTW.PlotBoxAspectRatio = [1 1 1];
+        handles.plotM = imagesc( handles.moveTW, 'CData', squeeze(synchmat(2,:,:)));
+        handles.plotM.Parent.Title.String = [ 'Synch: ' num2str(timewin{2}(1)) '-' num2str(timewin{2}(2)) ' Sec, '  '? \pm ? Hz'];
+        handles.plotM.Parent.Title.Position = [9.0000 17.85 0]
+        % Plot grid lines 
+        hold (handles.plotM.Parent,'on')
+            for j = 1:17
+                pMy{j} = plot(handles.moveTW, [0.5,18.5],[j-.5,j-.5],'k-');
+                pMx{j} = plot(handles.moveTW,[j-.5,j-.5],[0.5, 18.5],'k-');
+            end
+        hold (handles.plotM.Parent,'off')
+
+
+% % PHASE DIFFERENCE SYNCHRONIZATION PLOT
+        handles.phaseDif.XLim = [0.5 17.5];
+        handles.phaseDif.YLim = [0.5 17.5];
+        colorbar(handles.phaseDif)
+        handles.phaseDif.Colormap = lbmap(handles.phaseDif, 'RedBlue')
+        handles.phaseDif.CLim = [-1 1];
+        % Make the axes square
+        handles.phaseDif.PlotBoxAspectRatio = [1 1 1];
+        handles.plotD = imagesc( handles.phaseDif, 'CData', squeeze(diff(synchmat)))
+        handles.plotD.Parent.Title.String = ['Phase Synchronization Difference: Move - Rest'];
+        handles.plotD.Parent.Title.Position = [9.0000 17.85 0]
+        hold (handles.plotD.Parent,'on');
+            for j = 1:17
+                pDy{j} = plot(handles.phaseDif, [0.5,18.5],[j-.5,j-.5],'k-');
+                pDx{j} = plot(handles.phaseDif,[j-.5,j-.5],[0.5, 18.5],'k-');
+            end
+        hold (handles.plotD.Parent,'off');
+
+
+% % KRUSKAL WALLIS STASTICALLY SIGNIFICANT PHASE SYNCHRONIZATION
+
+        handles.krusWal.XLim = [0.5 17.5];
+        handles.krusWal.YLim = [0.5 17.5];
+        colorbar(handles.krusWal)
+        handles.krusWal.Colormap = lbmap(handles.krusWal, 'RedBlue')
+        handles.krusWal.CLim = [0    0.01];
+        % Mark Statistically Significant Phase Synchs in Kruskal-Wallis Test
+        hori = repmat(1:size(data,1),size(data,1),1);
+        vert = hori';
+        g = text(hori(:), vert(:), ' ', 'HorizontalAlignment', 'Center', 'Color','k', 'FontWeight', 'bold', 'Parent', handles.krusWal);
+        % Make the axes square
+        handles.krusWal.PlotBoxAspectRatio = [1 1 1];
+        handles.plotSS = imagesc( handles.krusWal, 'CData', squeeze(diff(synchmat)))
+        handles.plotSS.Parent.Title.String = ['Kruskal-Wallis Stat. Sig. \alpha = 0.05/17'];
+        handles.plotSS.Parent.Title.Position = [9.0000 17.85 0]
+        hold (handles.plotSS.Parent,'on');
+        pSy = cell(17,1);
+        pSx = cell(1,17);
+            for j = 1:17
+                pSy{j} = plot(handles.krusWal, [.5, 18.5],[j-.5,j-.5],'k-');
+                pSx{j} = plot(handles.krusWal,[j-.5,j-.5],[.5,18.5],'k-');
+            end
+        hold (handles.plotSS.Parent,'off');
         
+    for j = 1:17
+%         pRy{j} = plot(handles.plotR, [0.5, 18.5],[j-0.5, j-0.5],'k-');
+%         pRx{j} = plot(handles.plotR,[j-0.5, j-0.5],[0.5, 18.5],'k-');
+%         pMy{j} = plot(handles.moveTW, [0.5, 18.5],[j-0.5, j-0.5],'k-');
+%         pMx{j} = plot(handles.moveTW,[j-0.5, j-0.5],[0.5, 18.5],'k-');
+%         pDy{j} = plot(handles.phaseDif, [0.5, 18.5],[j-0.5, j-0.5],'k-');
+%         pDx{j} = plot(handles.phaseDif,[j-0.5, j-0.5],[0.5, 18.5],'k-');
+%         pSSy{j} = plot(handles.krusWal, [0.5, 18.5],[j-0.5, j-0.5],'k-');
+%         pSSx{j} = plot(handles.krusWal,[j-0.5, j-0.5],[0.5, 18.5],'k-');
 
-    
-else
-    
-    % motor img - calib
-    for ii = 1:size(RestOnset,1)
-        data(:,:,ii) = [megR3d(:,:,ii) megM3d(:,:,ii)];
     end
-    filtdat = filterFGx(data, srate, handles.slider_freq.Value, handles.slider_width.Value);
-end
 
-
-% time vector
-timevec = 0+1/srate:(1/(srate)):size(filtdat,2)/srate;
-
-timewin{1} = [timestart  timestart+tws];
-timewin{2} = [timestart+(size(filtdat,2)/2)/srate    timestart+tws+(size(filtdat,2)/2)/srate];
-
-% convert to time indices (sec)
-% 
-tidx1 = dsearchn(timevec',timewin{1}');
-tidx2 = dsearchn(timevec',timewin{2}');
-
-    synchmat1 = zeros( (size(filtdat,3)), (size(filtdat,1)), (size(filtdat,1)) );
-    synchmat2 = zeros( (size(filtdat,3)), (size(filtdat,1)), (size(filtdat,1)) );
 
     nchans = size(data,1);
        for triali=1:size(data,3)
             % Applying hilbert transform to matrix inputs
-            % This is where frequency-related data is put in, from filtdat
-            angts(:,:,triali) = angle(hilbert(squeeze(filtdat(:,:,triali))').');
+            angst(:,:,triali) = angle(hilbert(squeeze(filtdat(:,:,triali))').');
        end
 
          for chani=1:nchans
@@ -752,22 +745,20 @@ tidx2 = dsearchn(timevec',timewin{2}');
                 for tria = 1:size(data,3)
 
                     %%% time window 1
-                    
-                 synchmat1(tria,chani,chanj) = mean( abs(mean(exp(1i* (angts(chani,tidx1(1):tidx1(2),tria) - angts(chanj,tidx1(1):tidx1(2),tria))),2)) );
-%                     % extract angles in channel i, all trials
-%                     tmpAi = angts(chani,tidx1(1):tidx1(2),tria);
-%                     % extract angles in channel j all trials
-%                     tmpAj = angts(chanj,tidx1(1):tidx1(2),tria);
-%                     % compute synchronization between the two channels
-%                     % abs( mean( eulers formula( phase angle diff)), 2nd dim: time points)
-%                     trialsynch = abs(mean(exp(1i*( tmpAi-tmpAj )),2));
-%                     % average over trials - synchmat 1st Time Window
-%                     synchmat1(tria,chani,chanj) = mean(trialsynch);
+                    % extract angles in channel i, all trials
+                    tmpAi = angst(chani,tidx1(1):tidx1(2),tria);
+                    % extract angles in channel j all trials
+                    tmpAj = angst(chanj,tidx1(1):tidx1(2),tria);
+                    % compute synchronization between the two channels
+                    % abs( mean( eulers formula( phase angle diff)), 2nd dim: time points)
+                    trialsynch = abs(mean(exp(1i*( tmpAi-tmpAj )),2));
+                    % average over trials - synchmat 1st Time Window
+                    synchmat1(tria,chani,chanj) = mean(trialsynch);
 
                     %%% time window 2
-                    % extract phase angles
-                    tmpAi = angts(chani,tidx2(1):tidx2(2),tria);
-                    tmpAj = angts(chanj,tidx2(1):tidx2(2),tria);
+                    % extract angles
+                    tmpAi = angst(chani,tidx2(1):tidx2(2),tria);
+                    tmpAj = angst(chanj,tidx2(1):tidx2(2),tria);
                     % Phase Locking Value on each trial
                     trialsynch = abs(mean(exp(1i*( tmpAi-tmpAj )),2));
                     % average over trials - synchmat 2nd Time Window
@@ -776,8 +767,7 @@ tidx2 = dsearchn(timevec',timewin{2}');
                 end            
             end
          end
-        % synchmat Difference - Time Window x channels x channels - These
-        % must be the Rest Trials 
+        % synchmat Difference - Time Window x channels x channels 
         synchmatD = [mean(synchmat1,1); mean(synchmat2,1)];
     %     synchmatDif(1,chani,chanj) = mean((synchmat2(:,chani,chanj) - synchmat1(:,chani,chanj)),1);
         % diffS = synchmatD(2,:,:) - synchmatD(1,:,:);
@@ -854,3 +844,12 @@ tidx2 = dsearchn(timevec',timewin{2}');
 'Done'
 
 
+% % (In my code I want to compute PLV here)
+% sigmoid = a ./ (1 + exp(-b*(handles.x-c)) );
+% 
+% % update the sigmoid handle
+% set(handles.plots, 'YData', sigmoid);
+% 
+% % update the lines
+% set(handles.plotc, 'XData', [c c])
+% set(handles.plota, 'YData', [1 1]*a/2)
