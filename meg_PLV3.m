@@ -94,6 +94,7 @@ tril_ind = find(tril_I == 1);
 
 PLV_cut = zeros(trials, length(tril_ind) );
 for T = 1:trials
+    % Each row is a trial and each column is a channel interaction
     PLV_cut(T, :) = PLV{T}(tril_I);
 end
 

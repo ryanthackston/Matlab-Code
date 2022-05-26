@@ -1,4 +1,4 @@
-function [RestOnset, MoveOnset, labels] = meg_offsetdata_calib_aug2021(blocks, labels)
+function  [RestOnset, MoveOnset, labels, meg, time_start_labels, time_start_meg] = meg_offsetdata_calib_aug2021(blocks, labels, answers,srate,meg)
 %Will give Rest Onset, Move Onset, Rest Offset, and Move Offset points
 % Concatenate RestOnset and MoveOnset times for the 2 blocks
 
@@ -29,13 +29,20 @@ function [RestOnset, MoveOnset, labels] = meg_offsetdata_calib_aug2021(blocks, l
             end
         end
         
-        labels(RestOnset)=20;
-%         labels(RestOffset)=22;
-        labels(MoveOnset)=10;
-%         labels(MoveOffset)=11;
         
+        labels(RestOnset)=10;
+%         labels(RestOffset)=22;
+        labels(MoveOnset)=20;
+%         labels(MoveOffset)=11;
+
+        
+% Off by 4000 points, 
+% RestOnset(2) at 20001, in labels RestOnset(2) starts at 16001. 
+% MoveOnset(1) at 12001, in labels MoveOnset(1) starts at 8001.
+
         for R = 1:length(RestOnset)
-            if RestOnset(R) ~= 0 && RestOnset(R) > 10 && labels(RestOnset(R)-1) == 0
+            
+            if labels(RestOnset(R)) ~=0 && RestOnset(R) > 10 && labels(RestOnset(R)-1) == 0
                 labels(RestOnset(R)-4000:RestOnset(R) -1) = [];
                  MoveOnset(find(MoveOnset > RestOnset(R) )) = MoveOnset(find(MoveOnset > RestOnset(R) )) - 4000;
                 if R ~= length(RestOnset)
@@ -44,7 +51,10 @@ function [RestOnset, MoveOnset, labels] = meg_offsetdata_calib_aug2021(blocks, l
                 end
 
             else
+                continue;
             end
+%              labels(RestOnset(R)+(str2num(answers{8})*srate):RestOnset(R) +7999)
+%             meg(RestOnset(R)+(str2num(answers{8})*srate):RestOnset(R) +8000)
         end
         
         
@@ -59,7 +69,28 @@ function [RestOnset, MoveOnset, labels] = meg_offsetdata_calib_aug2021(blocks, l
     
             else
             end
+%              labels(MoveOnset(M)+(str2num(answers{8})*srate):MoveOnset(R) -1)
+%             meg(MoveOnset(M)+(str2num(answers{8})*srate):MoveOnset(R) -1)
         end
+        
+       labels( find(labels==0) ) = [];
+       MoveOnset = MoveOnset-4000;
+       
+       TrialsOnset = sort([RestOnset; MoveOnset]);
+       
+       time_start_meg = [];
+       time_start_labels = [];
+       
+       len_trial = size(TrialsOnset(1):TrialsOnset(2)-1,2);
+       
+       for T = 1:size(TrialsOnset)
+           time_start_meg = [ time_start_meg; meg( [ (TrialsOnset(T) + (str2num(answers{8})*srate)):(TrialsOnset(T) + len_trial-1) ],:) ];
+           time_start_labels = [ time_start_labels; labels( [ (TrialsOnset(T) + (str2num(answers{8})*srate)):(TrialsOnset(T) + len_trial-1) ]) ];
+       end
+       
+       meg = time_start_meg;
+       labels = time_start_labels;
+
 end
             
 %     %CHECK FOR OFFSET DATA. 

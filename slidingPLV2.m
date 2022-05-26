@@ -180,9 +180,10 @@ stepf = str2double(answers{5});
 fi = [stepf/(endF-begF) 1.0];
 %FWHM for filterdat
 freqwidt = str2double(answers{6});
-fwMax = 2.0;
+fwMax = 5.0;
 fwMin = 0.1;
-fwi = [ 0.2/(fwMax-fwMin) 1.0];
+increment_value = 0.2;
+fwi = [ increment_value/(fwMax-fwMin) 1.0];
 % time window parameters (in seconds) - leave out 1st sec for each task
 tws = str2double(answers{7});
 timewin = cell(2,1);
@@ -243,9 +244,10 @@ filtdat = filterFGx(data,srate, centfreq, freqwidt);
 % REST SYNCHRONIZATION INITIAL PLOT
         handles.restTW.XLim = [ 0.5 17.5 ];
         handles.restTW.YLim = [ 0.5 17.5 ];
-        colorbar(handles.restTW)
-        handles.restTW.Colormap = lbmap(handles.restTW, 'RedBlue')
+        handles.restTW.CLimMode = 'manual'
         handles.restTW.CLim = [0 0.9];
+        colorbar(handles.restTW)
+        handles.restTW.Colormap = lbmap(500, 'RedBlue');
         % Make the axes square
         handles.restTW.PlotBoxAspectRatio = [1 1 1];
         % drawGrid(handles.restTW, 0.75);
@@ -264,14 +266,15 @@ filtdat = filterFGx(data,srate, centfreq, freqwidt);
 % MOVEMENT SYNCHRONIZATION INITIAL PLOT
         handles.moveTW.XLim = [0.5 17.5];
         handles.moveTW.YLim = [0.5 17.5];
-        colorbar(handles.moveTW)
-        handles.moveTW.Colormap = lbmap(handles.moveTW, 'RedBlue')
+        handles.moveTW.CLimMode = 'manual'
         handles.moveTW.CLim = [0 0.9];
+        colorbar(handles.moveTW)
+        handles.moveTW.Colormap = lbmap(500, 'RedBlue');
         % Make the axes square
         handles.moveTW.PlotBoxAspectRatio = [1 1 1];
         handles.plotM = imagesc( handles.moveTW, 'CData', squeeze(synchmat(2,:,:)));
         handles.plotM.Parent.Title.String = [ 'Synch: ' num2str(timewin{2}(1)) '-' num2str(timewin{2}(2)) ' Sec, '  '? \pm ? Hz'];
-        handles.plotM.Parent.Title.Position = [9.0000 17.85 0]
+        handles.plotM.Parent.Title.Position = [9.5000 17.85 0]
         % Plot grid lines 
         hold (handles.plotM.Parent,'on')
             for j = 1:17
@@ -284,14 +287,15 @@ filtdat = filterFGx(data,srate, centfreq, freqwidt);
 % PHASE DIFFERENCE SYNCHRONIZATION PLOT
         handles.phaseDif.XLim = [0.5 17.5];
         handles.phaseDif.YLim = [0.5 17.5];
+        handles.phaseDif.CLimMode = 'manual';
         colorbar(handles.phaseDif)
-        handles.phaseDif.Colormap = lbmap(handles.phaseDif, 'RedBlue')
-        handles.phaseDif.CLim = [-1 1];
+        handles.phaseDif.Colormap = lbmap(500, 'RedBlue');
+        handles.phaseDif.CLim = [-.1 .1];
         % Make the axes square
         handles.phaseDif.PlotBoxAspectRatio = [1 1 1];
         handles.plotD = imagesc( handles.phaseDif, 'CData', squeeze(diff(synchmat)))
         handles.plotD.Parent.Title.String = ['Phase Synchronization Difference: Move - Rest'];
-        handles.plotD.Parent.Title.Position = [9.0000 17.85 0]
+        handles.plotD.Parent.Title.Position = [10.5000 17.85 0]
         hold (handles.plotD.Parent,'on');
             for j = 1:17
                 pDy{j} = plot(handles.phaseDif, [0.5,18.5],[j-.5,j-.5],'k-');
@@ -302,8 +306,9 @@ filtdat = filterFGx(data,srate, centfreq, freqwidt);
 % KRUSKAL WALLIS STASTICALLY SIGNIFICANT PHASE SYNCHRONIZATION
         handles.krusWal.XLim = [0.5 17.5];
         handles.krusWal.YLim = [0.5 17.5];
+        handles.krusWal.CLimMode = 'manual';
         colorbar(handles.krusWal)
-        handles.krusWal.Colormap = lbmap(handles.krusWal, 'RedBlue')
+        handles.krusWal.Colormap = lbmap(500, 'RedBlue');
         handles.krusWal.CLim = [0    0.01];
         % Mark Statistically Significant Phase Synchs in Kruskal-Wallis Test
         hori = repmat(1:size(data,1),size(data,1),1);
@@ -312,7 +317,7 @@ filtdat = filterFGx(data,srate, centfreq, freqwidt);
         % Make the axes square
         handles.krusWal.PlotBoxAspectRatio = [1 1 1];
         handles.plotSS = imagesc( handles.krusWal, 'CData', squeeze(diff(synchmat)))
-        handles.plotSS.Parent.Title.String = ['Kruskal-Wallis Stat. Sig. \alpha = 0.05/17'];
+        handles.plotSS.Parent.Title.String = ['Kruskal-Wallis Statistical Significance \alpha = 0.05/17'];
         handles.plotSS.Parent.Title.Position = [9.0000 17.85 0]
         hold (handles.plotSS.Parent,'on');
             for j = 1:17
@@ -382,8 +387,7 @@ filtdat = filterFGx(data,srate, centfreq, freqwidt);
 % Update Rest Trials Plot
         handles.plotR = imagesc( handles.restTW, 'CData', squeeze(mean(synchmat1,1))' ) 
         handles.plotR.Parent.Title.String =  [ 'Rest Phase Synch: ' num2str(timewin{1}(1)) '-' num2str(timewin{1}(2)) ' Sec, ' num2str(centfreq) ' \pm ' num2str(freqwidt) ' Hz'];
-        handles.plotR.Parent.Title.FontSize = 13.5;
-        handles.plotM.Parent.Title.FontSize = 13.5;
+        handles.plotR.Parent.Title.FontSize = 11.5;
         [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pRx{:});
         uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
         [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pRy{:});
@@ -392,7 +396,7 @@ filtdat = filterFGx(data,srate, centfreq, freqwidt);
 % Update Move Trials Plot
         handles.plotM = imagesc( handles.moveTW, 'CData', squeeze(mean(synchmat2,1)) )
         handles.plotM.Parent.Title.String =  [ 'Move Phase Synch: ' num2str(timewin{2}(1)) '-' num2str(timewin{2}(2)) ' Sec, ' num2str(centfreq) ' Hz \pm ' num2str(freqwidt) ' Hz'];
-        handles.plotM.Parent.Title.FontSize = 13.5;
+        handles.plotM.Parent.Title.FontSize = 11.5;
         [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pMx{:});
         uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
         [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pMy{:});
@@ -401,7 +405,7 @@ filtdat = filterFGx(data,srate, centfreq, freqwidt);
 % Update Phase Difference Plot
         handles.plotD = imagesc( handles.phaseDif, 'CData', squeeze(diff(synchmatD)) ) 
 %         handles.plotD.Parent.Title.String = ['Phase Synchronization Difference: Move - Rest'];
-        handles.plotD.Parent.Title.FontSize = 13.5;
+        handles.plotD.Parent.Title.FontSize = 11.5;
         [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pDx{:});
         uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
         [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pDy{:});
@@ -667,7 +671,7 @@ end
         handles.moveTW.PlotBoxAspectRatio = [1 1 1];
         handles.plotM = imagesc( handles.moveTW, 'CData', squeeze(synchmat(2,:,:)));
         handles.plotM.Parent.Title.String = [ 'Synch: ' num2str(timewin{2}(1)) '-' num2str(timewin{2}(2)) ' Sec, '  '? \pm ? Hz'];
-        handles.plotM.Parent.Title.Position = [9.0000 17.85 0]
+        handles.plotM.Parent.Title.Position = [9.5000 17.85 0]
         % Plot grid lines 
         hold (handles.plotM.Parent,'on')
             for j = 1:17
@@ -687,7 +691,7 @@ end
         handles.phaseDif.PlotBoxAspectRatio = [1 1 1];
         handles.plotD = imagesc( handles.phaseDif, 'CData', squeeze(diff(synchmat)))
         handles.plotD.Parent.Title.String = ['Phase Synchronization Difference: Move - Rest'];
-        handles.plotD.Parent.Title.Position = [9.0000 17.85 0]
+        handles.plotD.Parent.Title.Position = [10.5000 17.85 0]
         hold (handles.plotD.Parent,'on');
             for j = 1:17
                 pDy{j} = plot(handles.phaseDif, [0.5,18.5],[j-.5,j-.5],'k-');
@@ -700,8 +704,9 @@ end
 
         handles.krusWal.XLim = [0.5 17.5];
         handles.krusWal.YLim = [0.5 17.5];
+        handles.krusWal.CLimMode = 'manual';
         colorbar(handles.krusWal)
-        handles.krusWal.Colormap = lbmap(handles.krusWal, 'RedBlue')
+        handles.krusWal.Colormap = lbmap(500, 'RedBlue');
         handles.krusWal.CLim = [0    0.01];
         % Mark Statistically Significant Phase Synchs in Kruskal-Wallis Test
         hori = repmat(1:size(data,1),size(data,1),1);
@@ -710,7 +715,7 @@ end
         % Make the axes square
         handles.krusWal.PlotBoxAspectRatio = [1 1 1];
         handles.plotSS = imagesc( handles.krusWal, 'CData', squeeze(diff(synchmat)))
-        handles.plotSS.Parent.Title.String = ['Kruskal-Wallis Stat. Sig. \alpha = 0.05/17'];
+        handles.plotSS.Parent.Title.String = ['Kruskal-Wallis Statistical Significance \alpha = 0.05/17'];
         handles.plotSS.Parent.Title.Position = [9.0000 17.85 0]
         hold (handles.plotSS.Parent,'on');
         pSy = cell(17,1);
@@ -780,7 +785,7 @@ end
 %             set(handles.plotR, 'CData', squeeze(mean(synchmat1,1))' );
             handles.restTW = imagesc( handles.restTW, 'CData', squeeze(mean(synchmat1,1))' ) 
             handles.restTW.Parent.Title.String =  [ 'Rest Phase Synch: ' num2str(timewin{1}(1)) '-' num2str(timewin{1}(2)) ' Sec, ' num2str(centfreq) ' \pm ' num2str(freqwidt) ' Hz'];
-            handles.restTW.Parent.Title.FontSize = 13.5;
+            handles.restTW.Parent.Title.FontSize = 11.5;
             [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pRx{:});
             uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
             [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pRy{:});
@@ -791,7 +796,7 @@ end
 
             handles.plotM = imagesc( handles.moveTW, 'CData', squeeze(mean(synchmat2,1))' )
             handles.plotM.Parent.Title.String =  [ 'Move Phase Synch: ' num2str(timewin{2}(1)) '-' num2str(timewin{2}(2)) ' Sec, ' num2str(centfreq) ' Hz \pm ' num2str(freqwidt) ' Hz'];
-            handles.plotM.Parent.Title.FontSize = 13.5;
+            handles.plotM.Parent.Title.FontSize = 11.5;
             [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pMx{:});
             uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
             [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pMy{:});
@@ -801,7 +806,7 @@ end
 %             set(handles.plotD, 'CData', squeeze(diff(synchmatD)) );
             handles.plotD = imagesc( handles.phaseDif, 'CData', squeeze(diff(synchmatD)) ) 
     %         handles.plotD.Parent.Title.String = ['Phase Synchronization Difference: Move - Rest'];
-            handles.plotD.Parent.Title.FontSize = 13.5;
+            handles.plotD.Parent.Title.FontSize = 11.5;
             [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pDx{:});
             uistack([p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17], 'top');
             [p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17] = deal(pDy{:});

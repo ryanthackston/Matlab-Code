@@ -61,7 +61,7 @@ function slidingPLV_Aug2021_OpeningFcn(hObject, eventdata, handles, varargin)
 % Motor img - calib
 global answers stud subj blocks RestOnset MoveOnset
 
-questions = { '\fontsize{12} Select Task: [1] Motor Img Calib [2] Motor Img Control';...
+questions = { '\fontsize{12} Select Task: [1] Image Control [2] Real Control';...
                     '\fontsize{12} Which subject number would you like to analyze (1-9)?';...
                     '\fontsize{12} What frequency would you like to analyze first (Hz)?';...
                     '\fontsize{12} What frequency would like to analyze last (Hz)?';...
@@ -70,12 +70,15 @@ questions = { '\fontsize{12} Select Task: [1] Motor Img Calib [2] Motor Img Cont
                     '\fontsize{12} What should be the time window size (sec)?';...
                     '\fontsize{12} What time do you want to start at (sec)?';...
                     '\fontsize{12} Do you want to arrange filtered data by time points [1] or trials [2]?';...
-                    '\fontsize{12} What will be the size of the arrangement?'};
+                    '\fontsize{12} What will be the size of the arrangement?';...
+                    '\fontsize{12} Which day of sessions do you want to study from the subject (number 1-5 or 0 for all)'};
 
 
-definput = cell(10,1);
-definput(:) = [{'1'};{'4'};{'8.5'};{'27.5'};{'0.5'};{'3'};{'0.5'};{'2'};{'2'};{'50'}];
+definput = cell(11,1);
+definput(:) = [{'1'};{'4'};{'8.5'};{'27.5'};{'0.5'};{'3'};{'0.5'};{'2'};{'2'};{'50'};{'2'}];
 options.Interpreter = 'tex';        
+
+
 answers = inputdlg(questions, 'Parameters for PLV', [1 85], definput, options );
 
             
@@ -84,7 +87,41 @@ answers = inputdlg(questions, 'Parameters for PLV', [1 85], definput, options );
 stud_type = {micon_imag_aug2021(); mrcon_real_aug2021() };
 stud = stud_type{str2double(answers{1})};
 subj = str2double(answers{2});
-blocks = [load(stud{subj}(1,:)); load(stud{subj}(2,:))]; 
+% blocks = [load(stud{subj}(1,:)); load(stud{subj}(2,:))]; 
+
+D = str2num(answers{11});
+
+    if D > 0
+        for Sess = 1: size(stud{subj-11}{D}{1},1)
+
+            if (Sess==1)
+                blocks = load([stud{subj-11}{D}{1}(Sess,:)]);
+            else
+                blocks = [blocks; load([stud{subj-11}{D}{1}(Sess,:)]) ];
+            end
+
+        end
+
+
+    % if D==0, concatenate all blocks  of all days of the same subject
+    elseif D == 0
+        z = [];
+        for D = 1: size(stud{subj-11}{1}{1},1)
+            tmp = stud{subj-11}{D}{1};
+            z = char(z,tmp);
+        end
+        z(1,:) = [];
+
+        for Sess = 1:size(z,1)
+            if Sess == 1
+                blocks = load([stud{subj-11}{D}{1}(S,:)]);
+            else
+                blocks = [blocks; load([stud{subj-11}{D}{1}(S,:)]) ];
+            end
+        end
+    else
+        error('D cannot be negative')
+    end
 
 RestOnset = [blocks(1).RestOnset(:); blocks(2).RestOnset(:)+length(blocks(1).meg)];
 MoveOnset = [blocks(1).MoveOnset(:); blocks(2).MoveOnset(:)+length(blocks(1).meg)];

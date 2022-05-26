@@ -1,37 +1,35 @@
-%% filterFGx must be modified to account for differing frequencies. Right now PLV only measures from 1 frequency
-
-function varargout = slidingPLV_July2021(varargin)
-% SLIDINGPLV_JULY2021 MATLAB code for slidingPLV_July2021.fig
-%      SLIDINGPLV_JULY2021, by itself, creates a new SLIDINGPLV_JULY2021 or raises the existing
+function varargout = slidingPLV_Aug2021(varargin)
+% SLIDINGPLV_AUG2021 MATLAB code for slidingPLV_Aug2021.fig
+%      SLIDINGPLV_AUG2021, by itself, creates a new SLIDINGPLV_AUG2021 or raises the existing
 %      singleton*.
 %
-%      H = SLIDINGPLV_JULY2021 returns the handle to a new SLIDINGPLV_JULY2021 or the handle to
+%      H = SLIDINGPLV_AUG2021 returns the handle to a new SLIDINGPLV_AUG2021 or the handle to
 %      the existing singleton*.
 %
-%      SLIDINGPLV_JULY2021('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in SLIDINGPLV_JULY2021.M with the given input arguments.
+%      SLIDINGPLV_AUG2021('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in SLIDINGPLV_AUG2021.M with the given input arguments.
 %
-%      SLIDINGPLV_JULY2021('Property','Value',...) creates a new SLIDINGPLV_JULY2021 or raises the
+%      SLIDINGPLV_AUG2021('Property','Value',...) creates a new SLIDINGPLV_AUG2021 or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before slidingPLV_July2021_OpeningFcn gets called.  An
+%      applied to the GUI before slidingPLV_Aug2021_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to slidingPLV_July2021_OpeningFcn via varargin.
+%      stop.  All inputs are passed to slidingPLV_Aug2021_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help slidingPLV_July2021
+% Edit the above text to modify the response to help slidingPLV_Aug2021
 
-% Last Modified by GUIDE v2.5 26-Feb-2022 19:05:03
+% Last Modified by GUIDE v2.5 17-Mar-2022 01:52:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @slidingPLV_July2021_OpeningFcn, ...
-                   'gui_OutputFcn',  @slidingPLV_July2021_OutputFcn, ...
+                   'gui_OpeningFcn', @slidingPLV_Aug2021_OpeningFcn, ...
+                   'gui_OutputFcn',  @slidingPLV_Aug2021_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -46,13 +44,13 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before slidingPLV_July2021 is made visible.
-function slidingPLV_July2021_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before slidingPLV_Aug2021 is made visible.
+function slidingPLV_Aug2021_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to slidingPLV_July2021 (see VARARGIN)
+% varargin   command line arguments to slidingPLV_Aug2021 (see VARARGIN)
 
 % get the default parameter values for the sliders - (In my code I get
 % frequency here.)
@@ -63,45 +61,7 @@ function slidingPLV_July2021_OpeningFcn(hObject, eventdata, handles, varargin)
 % Motor img - calib
 global answers stud subj blocks RestOnset MoveOnset
 
-% MIcal = {[('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S1_Block1_imag_calib.mat');...
-%               ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S1_Block2_imag_calib.mat')],...
-%               [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S2_Block1_imag_calib.mat');...
-%               ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S2_Block2_imag_calib.mat')],...
-%               [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S3_Block1_imag_calib.mat');...
-%               ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S3_Block2_imag_calib.mat')],...
-%               [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S4_Block1_imag_calib.mat');...
-%               ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S4_Block2_imag_calib.mat')],...
-%               [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S5_Block1_imag_calib.mat');...
-%               ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S5_Block2_imag_calib.mat')],...
-%               [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S6_Block1_imag_calib.mat');...
-%               ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S6_Block2_imag_calib.mat')],...
-%               [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S7_Block1_imag_calib.mat');...
-%               ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S7_Block2_imag_calib.mat')],...
-%               [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S8_Block1_imag_calib.mat');...
-%               ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S8_Block2_imag_calib.mat')],...
-%               [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S9_Block1_imag_calib.mat');...
-%               ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_calibration\S9_Block2_imag_calib.mat')]};
-%           
-% MIcont = {[('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S1_Block1_imag_control.mat');...
-%                 ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S1_Block2_imag_control.mat')],...
-%                 [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S2_Block1_imag_control.mat');...
-%                 ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S2_Block2_imag_control.mat')],...
-%                 [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S3_Block1_imag_control.mat');...
-%                 ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S3_Block2_imag_control.mat')],...
-%                 [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S4_Block1_imag_control.mat');...
-%                 ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S4_Block2_imag_control.mat')],...
-%                 [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S5_Block1_imag_control.mat');...
-%                 ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S5_Block2_imag_control.mat')],...
-%                 [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S6_Block1_imag_control.mat');...
-%                 ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S6_Block2_imag_control.mat')],...
-%                 [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S7_Block1_imag_control.mat');...
-%                 ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S7_Block2_imag_control.mat')],...
-%                 [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S8_Block1_imag_control.mat');...
-%                 ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S8_Block2_imag_control.mat')],...
-%                 [('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S9_Block1_imag_control.mat');...
-%                 ('D:\OPM data - August 2019 - Colorado\BCI2000 mat files\imag_control\S9_Block2_imag_control.mat')]};
-%             
-questions = { '\fontsize{12} Select Task: [1] Motor Img Calib [2] Motor Img Control';...
+questions = { '\fontsize{12} Select Task: [1] Image Control [2] Real Control';...
                     '\fontsize{12} Which subject number would you like to analyze (1-9)?';...
                     '\fontsize{12} What frequency would you like to analyze first (Hz)?';...
                     '\fontsize{12} What frequency would like to analyze last (Hz)?';...
@@ -110,21 +70,59 @@ questions = { '\fontsize{12} Select Task: [1] Motor Img Calib [2] Motor Img Cont
                     '\fontsize{12} What should be the time window size (sec)?';...
                     '\fontsize{12} What time do you want to start at (sec)?';...
                     '\fontsize{12} Do you want to arrange filtered data by time points [1] or trials [2]?';...
-                    '\fontsize{12} What will be the size of the arrangement?'};
+                    '\fontsize{12} What will be the size of the arrangement?';...
+                    '\fontsize{12} Which day of sessions do you want to study from the subject (number 1-5 or 0 for all)'};
 
-
-definput = cell(10,1);
-definput(:) = [{'1'};{'4'};{'8.5'};{'27.5'};{'0.5'};{'3'};{'0.5'};{'2'};{'2'};{'50'}];
-options.Interpreter = 'tex';        
+definput = cell(11,1);
+definput(:) = [{'1'};{'13'};{'8.5'};{'27.5'};{'0.5'};{'3'};{'0.5'};{'2'};{'2'};{'50'};{'2'}];
+options.Interpreter = 'tex';
 answers = inputdlg(questions, 'Parameters for PLV', [1 85], definput, options );
 
             
 % Add as input for later
  % stud{1} -> MIcal; stud{2} -> MIcont
-stud_type = {mical_imag_july2021(); mical_real_july2021() };  
+%  stud_type = {micon_imag_aug2021(); mrcon_real_aug2021() };
+stud_type = {mical_imag_aug2021(); mrcal_real_aug2021() };
 stud = stud_type{str2double(answers{1})};
 subj = str2double(answers{2});
-blocks = [load(stud{subj}(1,:)); load(stud{subj}(2,:))]; 
+% day = 1;
+% blocks = [load(stud{subj-11}{day}{1}(1,:)); load(stud{subj-11}{day}{1}(2,:))]; 
+
+D = str2num(answers{11});
+
+    if D > 0
+        for Sess = 1: size(stud{subj-11}{D}{1},1)
+
+            if (Sess==1)
+                blocks = load([stud{subj-11}{D}{1}(Sess,:)]);
+            else
+                blocks = [blocks; load([stud{subj-11}{D}{1}(Sess,:)]) ];
+            end
+
+        end
+
+
+    % if D==0, concatenate all blocks  of all days of the same subject
+    elseif D == 0
+        z = [];
+        for D = 1: size(stud{subj-11}{1}{1},1)
+            tmp = stud{subj-11}{D}{1};
+            z = char(z,tmp);
+        end
+        z(1,:) = [];
+
+        for Sess = 1:size(z,1)
+            if Sess == 1
+                blocks = [load([stud{subj-11}{Sess}{1}(1,:)]); load([stud{subj-11}{Sess}{1}(2,:)])];
+            else
+                blocks = [blocks; [load([stud{subj-11}{Sess}{1}(1,:)]); load([stud{subj-11}{Sess}{1}(2,:)])] ];
+            end
+        end
+    else
+        error('D cannot be negative')
+    end
+
+
 
 RestOnset = [blocks(1).RestOnset(:); blocks(2).RestOnset(:)+length(blocks(1).meg)];
 MoveOnset = [blocks(1).MoveOnset(:); blocks(2).MoveOnset(:)+length(blocks(1).meg)];
@@ -166,6 +164,8 @@ MoveOnset = [blocks(1).MoveOnset(:); blocks(2).MoveOnset(:)+length(blocks(1).meg
             RestOffset = 0;
             MoveOffset = 0;
          end
+
+
               
 
 
@@ -223,8 +223,7 @@ fi = [stepf/(endF-begF) 1.0];
 freqwidt = str2double(answers{6});
 fwMax = 5.0;
 fwMin = 0.1;
-increment_value = 0.2;
-fwi = [ increment_value/(fwMax-fwMin) 1.0];
+fwi = [ 0.2/(fwMax-fwMin) 1.0];
 % time window parameters (in seconds) - leave out 1st sec for each task
 tws = str2double(answers{7});
 timewin = cell(2,1);
@@ -274,63 +273,107 @@ set(handles.text_time, 'String', ['Starting Time = ' num2str(handles.slider_time
 % Rearrange data to be channels x time points x trials in for loop
 global data megM3d megR3d roundnum
 
-if RestOffset ~=0
-    megR3d = cell(size(MoveOnset, 1), 1);
-    megM3d = cell(size(MoveOnset, 1), 1);
-
-    filtdatM = [];
-    filtdatR = [];
-    % Cut out unrelated data in trials
-    % 1 second before, 2 seconds after
-    for i = 1:size(RestOnset, 1)
-        % Rest
-        megR3d{i} = meg( :, (RestOnset(i) + 1000) : RestOffset(i)-2000 );
-        % Move
-        megM3d{i} = meg( :, (MoveOnset(i) + 1000) : MoveOffset(i)-2000 );
-        
-        % filterFGx - Frequency domain narrow-band filter Gaussian
-        filtdatR =  [filtdatR filterFGx(megR3d{i}, srate, handles.slider_freq.Value,handles.slider_width.Value)];
-        filtdatM =  [filtdatM filterFGx(megM3d{i}, srate, handles.slider_freq.Value, handles.slider_width.Value)];
-    end
-
-    % Make filtered move and rest data the same size, Round down from roundnum on
-    % the smallest matrix
-            roundnum = str2double(answers{10});
-            if size(filtdatR,2) <= size(filtdatM,2)
-                    filtdatR = filtdatR(: , 1:roundnum*(floor(length(filtdatR)/roundnum)));
-                    filtdatM = filtdatM(: , 1:roundnum*(floor(length(filtdatR)/roundnum)));
-            else
-                    filtdatM = filtdatM(: , 1:roundnum*(floor(length(filtdatM)/roundnum)));
-                    filtdatR = filtdatR(: , 1:roundnum*(floor(length(filtdatM)/roundnum)));
-            end
-            
-        if str2double(answers{9}) == 1
-             % Round by time points
-               filtdat = [reshape(filtdatR, size(filtdatR,1), roundnum, [])       reshape(filtdatM, size(filtdatM,1), roundnum, [])];
-        elseif str2double(answers{9}) == 2
-            % Round by trials
-              filtdat = [reshape(filtdatR, size(filtdatR,1), [] , roundnum)      reshape(filtdatM, size(filtdatR,1), [], roundnum)];      
-        end
+% if RestOffset ~=0
+%     megR3d = cell(size(MoveOnset, 1), 1);
+%     megM3d = cell(size(MoveOnset, 1), 1);
+% 
+%     filtdatM = [];
+%     filtdatR = [];
+%     % Cut out unrelated data in trials
+%     % 1 second before, 2 seconds after
+%     for i = 1:size(RestOnset, 1)
+%         % Rest
+%         megR3d{i} = meg( :, (RestOnset(i) + 1000) : RestOffset(i)-2000 );
+%         % Move
+%         megM3d{i} = meg( :, (MoveOnset(i) + 1000) : MoveOffset(i)-2000 );
+%         
+%         % filterFGx - Frequency domain narrow-band filter Gaussian
+%         filtdatR =  [filtdatR filterFGx(megR3d{i}, srate, handles.slider_freq.Value,handles.slider_width.Value)];
+%         filtdatM =  [filtdatM filterFGx(megM3d{i}, srate, handles.slider_freq.Value, handles.slider_width.Value)];
+%     end
+% 
+%     % Make filtered move and rest data the same size, Round down from roundnum on
+%     % the smallest matrix
+%             roundnum = str2double(answers{10});
+%             if size(filtdatR,2) <= size(filtdatM,2)
+%                     filtdatR = filtdatR(: , 1:roundnum*(floor(length(filtdatR)/roundnum)));
+%                     filtdatM = filtdatM(: , 1:roundnum*(floor(length(filtdatR)/roundnum)));
+%             else
+%                     filtdatM = filtdatM(: , 1:roundnum*(floor(length(filtdatM)/roundnum)));
+%                     filtdatR = filtdatR(: , 1:roundnum*(floor(length(filtdatM)/roundnum)));
+%             end
+%             
+%         if str2double(answers{9}) == 1
+%              % Round by time points
+%                filtdat = [reshape(filtdatR, size(filtdatR,1), roundnum, [])       reshape(filtdatM, size(filtdatM,1), roundnum, [])];
+%         elseif str2double(answers{9}) == 2
+%             % Round by trials
+%               filtdat = [reshape(filtdatR, size(filtdatR,1), [] , roundnum)      reshape(filtdatM, size(filtdatR,1), [], roundnum)];      
+%         end
     
-elseif RestOffset == 0
-    
-    megR3d = zeros(channels, size(RestOnset(1): (MoveOnset(1)-4001) , 2) ,size(RestOnset,1));
+% RestOffset == 0
+
+
+
+%     sorted_onsets = sort([MoveOnset; RestOnset]);
+%     largest_trial = max(diff(sorted_onsets));
+%     
+%     megR3d = zeros(channels, largest_trial, length(sorted_onsets) );
+%     megM3d = zeros(channels, largest_trial, length(sorted_onsets) );
+%     
+%     
+%     for i = 1:length(sorted_onsets)
+%         if i == length(sorted_onsets)
+%             if find(RestOnset == sorted_onsets(i))
+%                 megR3d(:,:,i) = meg(:, sorted_onsets(i):length(meg) );
+%             else find(MoveOnset == sorted_onsets(i))
+%                 megM3d(:,:,i) = meg(:, sorted_onsets(i):length(meg) );
+%             end
+%             
+%         else
+%             if find(RestOnset == sorted_onsets(i));
+%                 megR3d(:,:,i) = meg(:, sorted_onsets(i):(sorted_onsets(i+1)-1) );
+%             else find(MoveOnset == sorted_onsets(i)) ;
+%                 megM3d(:,:,i) = meg(:, sorted_onsets(i):(sorted_onsets(i+1)-1) ) ;
+%             end
+%         end
+%         
+%     end
+
+% Initialize 3D Matrix of Rest Trial and Move Trial meg data
+megR3d = zeros(channels, size(RestOnset(1): (MoveOnset(1)-4001) , 2) ,size(RestOnset,1));
     megM3d = zeros(channels, size(MoveOnset(1): RestOnset(2)-4001, 2) ,size(MoveOnset,1));
     data = zeros(channels, size(MoveOnset(1): RestOnset(2)-4001, 2)*2 ,size(RestOnset,1));
     
 
-
-    % motor img - calib
     for i = 1:size(RestOnset,1)
         % 8 second trials -> subtract out the last 4000 points
-        megR3d(:,:,i) = meg(:,(RestOnset(i): (MoveOnset(i)-4001) ));
+        megR3d(:,:,i) = meg(:,(RestOnset(i): RestOnset(i) + 7999 ));
         % Move trials -> subtract out the last 4000 points
-        megM3d(:,:,i) = meg(:,(MoveOnset(i): (MoveOnset(i) + (size(MoveOnset(1): RestOnset(2)-4002, 2)) ) ) );
+        megM3d(:,:,i) = meg(:,(MoveOnset(i):MoveOnset(i)+7999 ) );
         data(:,:,i) = [megR3d(:,:,i) megM3d(:,:,i)];
     end
-    % 96 Channels x 16000 Data Points X 30 Trials
+    % 62 Channels x 16000 Data Points X 30 Trials
     filtdat = filterFGx(data, srate, handles.slider_freq.Value, handles.slider_width.Value);
-end
+
+        
+    
+%     megR3d = zeros(channels, size(RestOnset(1): (MoveOnset(2)-4001) , 2) ,size(RestOnset,1));
+%     megM3d = zeros(channels, size(MoveOnset(1): RestOnset(2)-4001, 2) ,size(MoveOnset,1));
+%     data = zeros(channels, size(MoveOnset(1): RestOnset(2)-4001, 2)*2 ,size(RestOnset,1));
+%     
+% 
+% 
+%     % motor img - calib
+%     for i = 1:size(RestOnset,1)
+%         % 8 second trials -> subtract out the last 4000 points
+%         megR3d(:,:,i) = meg(:,(RestOnset(i): (MoveOnset(i)-4001) ));
+%         % Move trials -> subtract out the last 4000 points
+%         megM3d(:,:,i) = meg(:,(MoveOnset(i): (MoveOnset(i) + (size(MoveOnset(1): RestOnset(2)-4002, 2)) ) ) );
+%         data(:,:,i) = [megR3d(:,:,i) megM3d(:,:,i)];
+%     end
+%     filtdat = filterFGx(data, srate, handles.slider_freq.Value, handles.slider_width.Value);
+% end
 
 
 % time vector
@@ -421,8 +464,8 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert SS_chan_inter
 
 % KRUSKAL WALLIS STASTICALLY SIGNIFICANT PHASE SYNCHRONIZATION
         % GUI Limits, colors
-        handles.krusWal.XLim = [0.5 96.5];
-        handles.krusWal.YLim = [0.5 96.5];
+        handles.krusWal.XLim = [0.5 62.5];
+        handles.krusWal.YLim = [0.5 62.5];
         handles.krusWal.CLimMode = 'manual';
         colorbar(handles.krusWal)
         handles.krusWal.Colormap = lbmap(500, 'RedBlue');
@@ -434,13 +477,13 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert SS_chan_inter
         % Make the axes square
         handles.krusWal.PlotBoxAspectRatio = [1 1 1];
         handles.plotSS = imagesc( handles.krusWal, 'CData', squeeze(diff(synchmat)));
-        handles.plotSS.Parent.Title.String = 'Kruskal-Wallis Stat. Sig. \alpha = 0.05/96 channels';
-        handles.plotSS.Parent.Title.Position = [20 96.85 0];
+        handles.plotSS.Parent.Title.String = 'Kruskal-Wallis Stat. Sig. \alpha = 0.05/ 62 Channels';
+        handles.plotSS.Parent.Title.Position = [30 62.85 0];
         handles.plotSS.Parent.CLim = [0 0.01];        
         hold (handles.plotSS.Parent,'on');
             for j = 1:channels
-                pSy{j} = plot(handles.krusWal, [.5, 97.5],[j-.5,j-.5],'k-');
-                pSx{j} = plot(handles.krusWal,[j-.5,j-.5],[.5,97.5],'k-');
+                pSy{j} = plot(handles.krusWal, [.5, 63.5],[j-.5,j-.5],'k-');
+                pSx{j} = plot(handles.krusWal,[j-.5,j-.5],[.5,63.5],'k-');
             end
         hold (handles.plotSS.Parent,'off');
 
@@ -547,11 +590,14 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert SS_chan_inter
         handles.plotSS.Parent.Title.FontSize = 13.5;
         handles.plotSS.Parent.CLim = [0 0.01];
         handles.krusWal.CLim = [0 0.01];
-        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pSx{:});
-        uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pSy{:});
-        uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
+        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62] = deal(pSx{:});
+        uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62], 'top');
+        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62] = deal(pSy{:});
+        uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62], 'top');
     
+        
+        handles.g = g;
+        
     for tt = 1:length(g)
         % Reset previous stat sig labels
         g(tt).String = ' ';
@@ -564,7 +610,7 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert SS_chan_inter
         end
     end
 
-ind = tril(zeros(96,96));
+ind = tril(zeros(62,62));
 for i = 1:length(g)
     if g(i).String == 'X'
         ind(i) = 1;
@@ -583,7 +629,7 @@ assignin('base', 'SS_chan_inter', SS_chan_inter(1:size(SS_chan_inter,1)/2))
 
 
 
-% Choose default command line output for slidingPLV_July2021
+% Choose default command line output for slidingPLV_Aug2021
 handles.output = hObject;
 
 % Update handles structure
@@ -593,12 +639,12 @@ guidata(hObject, handles);
 
 
 
-% UIWAIT makes slidingPLV_July2021 wait for user response (see UIRESUME)
+% UIWAIT makes slidingPLV_Aug2021 wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = slidingPLV_July2021_OutputFcn(hObject, eventdata, handles) 
+function varargout = slidingPLV_Aug2021_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -725,8 +771,8 @@ if RestOffset ~=0
         filtdatR = [];
         filtdat = [];
     for i = 1:size(megR3d,1)
-        filtdatR =  [filtdatR filterFGx(megR3d{i}, srate, handles.slider_freq.Value,handles.slider_width.Value)];
-        filtdatM =  [filtdatM filterFGx(megM3d{i}, srate, handles.slider_freq.Value, handles.slider_width.Value)];
+        filtdatR =  [filtdatR,  filterFGx(megR3d{i}, srate, handles.slider_freq.Value,handles.slider_width.Value)];
+        filtdatM =  [filtdatM,  filterFGx(megM3d{i}, srate, handles.slider_freq.Value, handles.slider_width.Value)];
     end
         % Filter data second to filter out edge artifacts
         % Make filtered move and rest data the same size, Round down from 50 on
@@ -759,11 +805,18 @@ else
     filtdat = filterFGx(data, srate, handles.slider_freq.Value, handles.slider_width.Value);
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FOCUS ON HERE FOR CHECKING START TIME (timestart)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % time vector
 timevec = 0+1/srate:(1/(srate)):size(filtdat,2)/srate;
 
+%timewin{1} only checks the starting time (default 0 sec) to the Time Window Size (0.5 sec)
+%For Rest PLV
 timewin{1} = [timestart  timestart+tws];
+
+%timewin{2} for Move PLV, at the end of the filtdat
 timewin{2} = [timestart+(size(filtdat,2)/2)/srate    timestart+tws+(size(filtdat,2)/2)/srate];
 
 % convert to time indices (sec)
@@ -786,7 +839,7 @@ tidx2 = dsearchn(timevec',timewin{2}');
                 for tria = 1:size(data,3)
 
                     %%% time window 1
-                    
+                    % synchmat1 - Rest PLV Plot
                  synchmat1(tria,chani,chanj) = mean( abs(mean(exp(1i* (angts(chani,tidx1(1):tidx1(2),tria) - angts(chanj,tidx1(1):tidx1(2),tria))),2)) );
 %                     % extract angles in channel i, all trials
 %                     tmpAi = angts(chani,tidx1(1):tidx1(2),tria);
@@ -799,6 +852,7 @@ tidx2 = dsearchn(timevec',timewin{2}');
 %                     synchmat1(tria,chani,chanj) = mean(trialsynch);
 
                     %%% time window 2
+                    % synchmat2 - Move PLV Plot
                     % extract phase angles
                     tmpAi = angts(chani,tidx2(1):tidx2(2),tria);
                     tmpAj = angts(chanj,tidx2(1):tidx2(2),tria);
@@ -858,6 +912,7 @@ tidx2 = dsearchn(timevec',timewin{2}');
         krusP = zeros(nchans,nchans);
         for ii = 1:nchans
             for jj = 1:nchans
+                %KRUSKALWALLIS Nonparametric one-way analysis of variance (ANOVA).
                 [krusP(ii,jj), tbl{ii,jj}, stats{ii,jj}] = kruskalwallis([synchmat1(:,ii,jj) synchmat2(:,ii,jj)], [], 'off');
             end
         end
@@ -877,10 +932,10 @@ tidx2 = dsearchn(timevec',timewin{2}');
         colorbar(handles.krusWal)
         handles.krusWal.Colormap = lbmap(500, 'RedBlue');
         handles.krusWal.CLim = [0  0.01];
-        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pSx{:});
-        uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pSy{:});
-        uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
+        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62] = deal(pSx{:});
+        uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62], 'top');
+        [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62] = deal(pSy{:});
+        uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62], 'top');
 
         
         for tt = 1:length(g)
@@ -896,7 +951,7 @@ tidx2 = dsearchn(timevec',timewin{2}');
             
         end
 
-        ind = tril(zeros(96,96));
+        ind = tril(zeros(62,62));
         for i = 1:length(g)
             if g(i).String == 'X'
                 ind(i) = 1;

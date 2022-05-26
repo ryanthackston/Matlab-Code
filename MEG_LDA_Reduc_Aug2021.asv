@@ -1,0 +1,132 @@
+
+% Input Parameters - use defaults for now - Motor Img Cal, Subj 4
+definput = cell(11,1);
+definput(:) = [{'1'};{'13'};{'14'};{'30'};{'0.5'};{'3'};{'0.5'};{'0'};{'2'};{'50'};{'2'}];
+answers = meg_answer_aug2021(definput);
+
+srate = 1000;
+
+ % stud{1} -> MIcal; stud{2} -> MIcont
+[blocks,stud, subj] = meg_blocks_aug2021(answers);
+
+% meg - channels x data
+% Extract labels from MEG data for movement task
+% [labels, meg, class_label, temp_ind] = meg_labels_aug2021(answers, blocks, stud, subj);
+[labels, meg, class_label, temp_ind] = meg_labels_calib_aug2021(answers, blocks, stud, subj);
+
+% Find Onset and Offset Data of Tasks
+% [RestOnset, MoveOnset, RestOffset, MoveOffset, labels] = meg_offsetdata_aug2021(blocks, labels);
+
+ [RestOnset, MoveOnset, labels, meg, time_start_labels, time_start_meg] = meg_offsetdata_calib_aug2021(blocks, labels, answers,srate,meg);
+
+% % REARRANGE THE CHANNEL NUMBERS TO GO FROM TOP-LEFT TO BOTTOM-RIGHT ON
+% % SCALP MAP
+% [meg] = meg_chanarrange(meg);
+
+meg = meg';
+tw = str2num(answers{5})*srate;
+shift = 100;
+nfft = 1028;
+freq = 0:srate/nfft:srate/2;
+chans = size(meg,1);
+trials = int64((size(meg, 2) - tw)/shift + 1);
+
+%Change onset labels back
+labels(find(labels == 10)) = 1;
+labels(find(labels == 20)) = 2;
+
+% Initialize Variables
+[meg_tw, Fmeg_tw, meg_f, meg_fft_singleTW, x_abs, x_pow, x_pow_str, feat, alpha, beta, w, freq_val, freq_width, PLV, d, B, I, d_sort, d_s, PLV_Rest_I, PLV_Move_I] =meg_initvars(answers, meg, srate,nfft, freq, chans, trials);
+
+[meg_tw, Fmeg, PLV, PLV_Rest_I, PLV_Move_I, PLV_cut, row, col, tril_ind, tril_I] = meg_PLV3(meg, w, labels, trials, shift, tw, srate, freq_val, freq_width, PLV_Rest_I, PLV_Move_I);
+
+top_features = 10;
+
+[PLV_features, PLV_Mahal, Median_Mahal, Median_Mahal_Sort, Median_Mahal_Ind, Top_Median_Mahal_Sort, Top_Median_Mahal_Ind, PLV_Diff_Coord, PLV_Diff_Sort, trials_compared, PLV_Move_I, PLV_Rest_I] = meg_PLVfeatures2(top_features, trials, PLV, PLV_Move_I, PLV_Rest_I, PLV_cut, row, col, tril_ind);
+
+[Class_Vec] = meg_featuresSorted2(PLV, trials);
+
+decoderScript_SpectralPower
+
+%  [C err P logp coeff PredictedVsActualClasses testAcc] = meg_PLVclassify_with_Spectral_Power(Class_Vec, PLV_features, featureTesting_best, featureTraining_best, featureMatrixTrials)
+
+[C err P logp coeff PredictedVsActualClasses testAcc]  = meg_PLVclassify2(Class_Vec, PLV_features)
+
+Top_Channel_Pairs = [row([Top_Median_Mahal_Ind]) col([Top_Median_Mahal_Ind]) ];
+
+% tableX = array2table(PLV_features, 'VariableNames', {['Channel Pair ', num2str(Top_Channel_Pairs(1,1)), ' ', num2str(Top_Channel_Pairs(1,2)) ] ,...
+%                                                                                              ['Channel Pair ', num2str(Top_Channel_Pairs(2,1)), '-', num2str(Top_Channel_Pairs(2,2)) ] ,...
+%                                                                                              ['Channel Pair ', num2str(Top_Channel_Pairs(3,1)), '-', num2str(Top_Channel_Pairs(3,2)) ] ,...
+%                                                                                              ['Channel Pair ', num2str(Top_Channel_Pairs(4,1)), '-', num2str(Top_Channel_Pairs(4,2)) ] ,...
+%                                                                                              ['Channel Pair ', num2str(Top_Channel_Pairs(5,1)), '-', num2str(Top_Channel_Pairs(5,2)) ] ,...
+%                                                                                              ['Channel Pair ', num2str(Top_Channel_Pairs(6,1)), '-', num2str(Top_Channel_Pairs(6,2)) ] ,...
+%                                                                                              ['Channel Pair ', num2str(Top_Channel_Pairs(7,1)), '-', num2str(Top_Channel_Pairs(7,2)) ] ,...
+%                                                                                              ['Channel Pair ', num2str(Top_Channel_Pairs(8,1)), '-', num2str(Top_Channel_Pairs(8,2)) ] ,...
+%                                                                                              ['Channel Pair ', num2str(Top_Channel_Pairs(9,1)), '-', num2str(Top_Channel_Pairs(9,2)) ] ,...
+%                                                                                              ['Channel Pair ', num2str(Top_Channel_Pairs(10,1)), '-', num2str(Top_Channel_Pairs(10,2)) ] } );
+X = PLV_features;
+Y = Class_Vec;
+
+
+SVMModel = fitcsvm(X,Y,'Standardize',true,'KernelFunction','RBF',...
+'KernelScale','auto');
+% CVSVMModel = crossval(SVMModel);
+
+%classdef DisallowVectorOps - [varargout] = subsref(this,s) - finds
+%NumObservations in SVMModel - "this" is ClassificationsSVM class - "s"
+%is struct of NumObservations
+%Returns 4496 in a cell as varargin
+
+%classdef cvpartition -> cv = cvpartition(varargin) 
+% varargin is now 1x3 cell {4496, 'k', 5)
+% converts all string to chars
+% After if-else goes to Regular Constructor
+
+%cv.Impl = internal.stats.cvpartitionInMemoryImpl(varargin{:});
+% Sets up the cvpartitionInMemoryImpl class. Gives type, NumTestSets,
+% TrainSize, TestSize, NumObservations.
+% Calculates amount of data points in each kFold for Test and Training
+
+
+    cv = cvpartition(SVMModel.NumObservations, 'k', 5 );
+    
+    %Need to figure out how to train on non-random data
+     cross_validated_model = crossval(SVMModel,'cvpartition',cv);
+    
+     [ testIdx, trainIdx, nTest] = cvpartition1(size(PLV_features,1), folds);
+%     
+%     cv = cvpartition(SVMModel.NumObservations, 'HoldOut', (0.2) );
+    
+      folds = 5;
+    
+ for i = 1:folds
+%     trIdx = cv.training(i);
+%     teIdx = cv.test(i);
+     
+% X(test(cv,i), 1:10) is 899 features x 10 channels - Can replace with
+% non-random data'
+    Predictions = predict(cross_validated_model.Trained{1}, X(testIdx(i,:),:) ) ;
+    
+%     Results = confusionmat(cross_validated_model.Y(testIdx(i,:),:) ,Predictions);
+
+     PredictedVsActualClasses = strcmp(Predictions, Class_Vec(testIdx(i,:),:) );
+
+ 
+ % - 76% with Subj 13, Day 2, 14Hz, Freq Width 5, Start at 0.5 Sec
+ testAcc(i) = sum(PredictedVsActualClasses)/length(PredictedVsActualClasses)
+end
+
+% SVMModel = fitcsvm(X,Y,'Standardize',true,'KernelFunction','RBF',...
+%     'KernelScale','auto');
+
+% Y - Class Vector
+% X - Data - PLV Values
+ 
+%  % Count frequency of channels being in top 10
+%  z = [1: size(meg) ]; 
+% count1 = countmember(z, Mahal_Vec(:,2));
+% count2 = countmember(z, Mahal_Vec(:,3));
+% chan_count = count1 + count2
+
+%test1 = {meg1; labels1; answers1; MoveOnset1; RestOnset1; PLV1; PLV_Rest_I1; PLV_Move_I1; PLV_cut1; PLV_features1; err1; testAcc1; PredictedVsActualClasses1}; 
+

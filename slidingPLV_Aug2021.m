@@ -22,7 +22,7 @@ function varargout = slidingPLV_Aug2021(varargin)
 
 % Edit the above text to modify the response to help slidingPLV_Aug2021
 
-% Last Modified by GUIDE v2.5 17-Mar-2022 01:52:28
+% Last Modified by GUIDE v2.5 23-May-2022 16:17:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -61,20 +61,20 @@ function slidingPLV_Aug2021_OpeningFcn(hObject, eventdata, handles, varargin)
 % Motor img - calib
 global answers stud subj blocks RestOnset MoveOnset
 
-questions = { '\fontsize{12} Select Task: [1] Motor Img Calib [2] Motor Real Calib';...
-                    '\fontsize{12} Which subject number would you like to analyze (1-9)?';...
+questions = { '\fontsize{12} Select Task: [1] Image Control [2] Real Control';...
+                    '\fontsize{12} Which subject number would you like to analyze (12-18)?';...
                     '\fontsize{12} What frequency would you like to analyze first (Hz)?';...
                     '\fontsize{12} What frequency would like to analyze last (Hz)?';...
                     '\fontsize{12} How much should the frequency increment by?';...
                     '\fontsize{12} What should be the frequency width for the filter?';...
-                    '\fontsize{12} What should be the time window size (sec)?';...
+                    '\fontsize{12} What length of time do you want to analyze in each trial (sec)?';...
                     '\fontsize{12} What time do you want to start at (sec)?';...
-                    '\fontsize{12} Do you want to arrange filtered data by time points [1] or trials [2]?';...
-                    '\fontsize{12} What will be the size of the arrangement?'};
+                    '\fontsize{12} Do you want to arrange filtered data by time points [1] or trials [2]? (Always set 2)';...
+                    '\fontsize{12} What will be the size of the arrangement? (Not used)';...
+                    '\fontsize{12} Which day of sessions do you want to study from the subject (number 1-5)'};
 
-
-definput = cell(10,1);
-definput(:) = [{'1'};{'13'};{'8.5'};{'27.5'};{'0.5'};{'3'};{'0.5'};{'2'};{'2'};{'50'}];
+definput = cell(11,1);
+definput(:) = [{'1'};{'13'};{'14'};{'30'};{'0.5'};{'5'};{'7.5'};{'0.5'};{'2'};{'50'};{'2'}];
 options.Interpreter = 'tex';
 answers = inputdlg(questions, 'Parameters for PLV', [1 85], definput, options );
 
@@ -85,8 +85,44 @@ answers = inputdlg(questions, 'Parameters for PLV', [1 85], definput, options );
 stud_type = {mical_imag_aug2021(); mrcal_real_aug2021() };
 stud = stud_type{str2double(answers{1})};
 subj = str2double(answers{2});
-day = 1;
-blocks = [load(stud{subj-11}{day}{1}(1,:)); load(stud{subj-11}{day}{1}(2,:))]; 
+% day = 1;
+% blocks = [load(stud{subj-11}{day}{1}(1,:)); load(stud{subj-11}{day}{1}(2,:))]; 
+
+D = str2num(answers{11});
+
+    if D > 0
+        for Sess = 1: size(stud{subj-11}{D}{1},1)
+
+            if (Sess==1)
+                blocks = load([stud{subj-11}{D}{1}(Sess,:)]);
+            else
+                blocks = [blocks; load([stud{subj-11}{D}{1}(Sess,:)]) ];
+            end
+
+        end
+
+
+    % if D==0, concatenate all blocks  of all days of the same subject
+    elseif D == 0
+        z = [];
+        for D = 1: size(stud{subj-11}{1}{1},1)
+            tmp = stud{subj-11}{D}{1};
+            z = char(z,tmp);
+        end
+        z(1,:) = [];
+
+        for Sess = 1:size(z,1)
+            if Sess == 1
+                blocks = [load([stud{subj-11}{Sess}{1}(1,:)]); load([stud{subj-11}{Sess}{1}(2,:)])];
+            else
+                blocks = [blocks; [load([stud{subj-11}{Sess}{1}(1,:)]); load([stud{subj-11}{Sess}{1}(2,:)])] ];
+            end
+        end
+    else
+        error('D cannot be negative')
+    end
+
+
 
 RestOnset = [blocks(1).RestOnset(:); blocks(2).RestOnset(:)+length(blocks(1).meg)];
 MoveOnset = [blocks(1).MoveOnset(:); blocks(2).MoveOnset(:)+length(blocks(1).meg)];
@@ -185,7 +221,7 @@ stepf = str2double(answers{5});
 fi = [stepf/(endF-begF) 1.0];
 %FWHM for filterdat
 freqwidt = str2double(answers{6});
-fwMax = 5.0;
+fwMax = 10.0;
 fwMin = 0.1;
 fwi = [ 0.2/(fwMax-fwMin) 1.0];
 % time window parameters (in seconds) - leave out 1st sec for each task
@@ -193,8 +229,11 @@ tws = str2double(answers{7});
 timewin = cell(2,1);
 timestart = str2double(answers{8});
 
+timeMax = 8.0;
+timeMin = 0.0;
+
 % time step increment
-tstepi = [ 0.5/(5.0-0.0) 1.0];
+tstepi = [ tws/(timeMax-timeMin) 1.0];
 % sample rate
 srate = 1000;
 % Frequencies to analyze
@@ -214,14 +253,14 @@ set(handles.slider_width, 'SliderStep', fwi);
 freqwidt = get(handles.slider_width, 'Value');
 set(handles.text_freqwidt, 'String', ['Frequency Width = ' num2str(handles.slider_width.Value)]);
 
-set(handles.slider_timewin_size, 'Max', 5.0);
+set(handles.slider_timewin_size, 'Max', 8.0);
 set(handles.slider_timewin_size, 'Min', 0.0);
 set(handles.slider_timewin_size, 'Value', tws);
 set(handles.slider_timewin_size, 'SliderStep', tstepi);
 timeWinSize = get(handles.slider_timewin_size, 'Value');
 set(handles.text_timewinSize, 'String', ['Time Window Size = ' num2str(handles.slider_timewin_size.Value)]);
 
-set(handles.slider_time, 'Max', 5.0);
+set(handles.slider_time, 'Max', 8.0);
 set(handles.slider_time, 'Min', 0.0);
 set(handles.slider_time, 'Value', timestart);
 set(handles.slider_time, 'SliderStep', tstepi);
@@ -304,21 +343,22 @@ global data megM3d megR3d roundnum
 %         
 %     end
 
+% Initialize 3D Matrix of Rest Trial and Move Trial meg data
+% Channels X Data X Trials
 megR3d = zeros(channels, size(RestOnset(1): (MoveOnset(1)-4001) , 2) ,size(RestOnset,1));
     megM3d = zeros(channels, size(MoveOnset(1): RestOnset(2)-4001, 2) ,size(MoveOnset,1));
     data = zeros(channels, size(MoveOnset(1): RestOnset(2)-4001, 2)*2 ,size(RestOnset,1));
     
 
-
-    % motor img - calib
     for i = 1:size(RestOnset,1)
         % 8 second trials -> subtract out the last 4000 points
-        megR3d(:,:,i) = meg(:,(RestOnset(i): (MoveOnset(i)-4001) ));
+        megR3d(:,:,i) = meg(:,(RestOnset(i): RestOnset(i) + 7999 ));
         % Move trials -> subtract out the last 4000 points
-        megM3d(:,:,i) = meg(:,(MoveOnset(i): (MoveOnset(i) + (size(MoveOnset(1): RestOnset(2)-4002, 2)) ) ) );
+        megM3d(:,:,i) = meg(:,(MoveOnset(i):MoveOnset(i)+7999 ) );
         data(:,:,i) = [megR3d(:,:,i) megM3d(:,:,i)];
     end
-    % 96 Channels x 16000 Data Points X 30 Trials
+    % 62 Channels x 16000 Data Points X 30 Trials (First 8000 points are
+    % Rest, 2nd 8000 pnts are Move
     filtdat = filterFGx(data, srate, handles.slider_freq.Value, handles.slider_width.Value);
 
         
@@ -346,7 +386,7 @@ timevec = 0+1/srate:(1/(srate)): size(filtdat,2)/srate;
 
 % Rest Time Window - default 0 to 0.5 sec
 timewin{1} = [timeWin  timeWin+timeWinSize];
-% Move Time Window - default 12 to 12.5 sec
+% Move Time Window - default 8 to 8.5 sec
 timewin{2} = [timeWin+((size(filtdat,2)/2)/srate)    timeWin+timeWinSize+((size(filtdat,2)/2)/srate)];
 
 % convert to time indices
@@ -442,8 +482,8 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert SS_chan_inter
         % Make the axes square
         handles.krusWal.PlotBoxAspectRatio = [1 1 1];
         handles.plotSS = imagesc( handles.krusWal, 'CData', squeeze(diff(synchmat)));
-        handles.plotSS.Parent.Title.String = 'Kruskal-Wallis Stat. Sig. \alpha = 0.05/#chans';
-        handles.plotSS.Parent.Title.Position = [50 62.85 0];
+        handles.plotSS.Parent.Title.String = 'Kruskal-Wallis Stat. Sig. \alpha = 0.05/ 62 Channels';
+        handles.plotSS.Parent.Title.Position = [30 62.85 0];
         handles.plotSS.Parent.CLim = [0 0.01];        
         hold (handles.plotSS.Parent,'on');
             for j = 1:channels
@@ -540,12 +580,14 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert SS_chan_inter
     krusP = zeros(nchans,nchans);
     for ii = 1:nchans
         for jj = 1:nchans
+            % Kruskal-Wallis compares one against many trials and gives
+            % significance
             [krusP(ii,jj)] = kruskalwallis([synchmat1(:,ii,jj) synchmat2(:,ii,jj)], [], 'off');
         end
     end
     % Arrange kruskal-wallis values for labeling in image
-    kk = num2cell(krusP);
-    kk = cellfun(@num2str, kk, 'UniformOutput', false); % convert to string  
+   chans_krus_wall_vals  = num2cell(krusP);
+    chans_krus_wall_vals = cellfun(@num2str, chans_krus_wall_vals, 'UniformOutput', false); % convert to string  
 
 %     ss = krusP <= alphaT;
 %     ssi = find(ss);
@@ -560,11 +602,14 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert SS_chan_inter
         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62] = deal(pSy{:});
         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62], 'top');
     
+        
+        handles.g = g;
+        
     for tt = 1:length(g)
         % Reset previous stat sig labels
         g(tt).String = ' ';
         alphaT = 0.05/size(filtdat,1);
-        if str2double(kk{tt})<= alphaT
+        if str2double(chans_krus_wall_vals{tt})<= alphaT
             % Label images that are stat sig
              g(tt) = text(hori(tt), vert(tt), 'X', 'HorizontalAlignment', 'Center', 'Color','w', 'FontWeight', 'bold', 'FontSize', 11, 'Parent', handles.krusWal);
         else
@@ -581,15 +626,15 @@ end
 
 handles.g = g;
 
-[rowX,colX] = find(ind == 1);
+[rowX,colX] = find(tril(ind,-1) == 1);
 SS_chan_inter = [rowX colX];
 
 % Save Statistically Significant channel interactions to workspace and take
 % out the duplicates
-assignin('base', 'SS_chan_inter', SS_chan_inter(1:size(SS_chan_inter,1)/2))
-
-
-
+assignin('base', 'SS_chan_inter', SS_chan_inter)
+assignin('base', 'krusP', krusP)
+assignin('base', 'chans_krus_wall_vals', chans_krus_wall_vals)
+assignin('base', 'answers', answers)
 
 % Choose default command line output for slidingPLV_Aug2021
 handles.output = hObject;
@@ -707,7 +752,7 @@ end
 
 function updatePhaseSync(handles)
 
-global answers stud subj blocks RestOnset MoveOnset nchans krusP kk alphaT RestOffset
+global answers stud subj blocks RestOnset MoveOnset nchans krusP chans_krus_wall_vals alphaT RestOffset
 global begF endF stepf meg
 global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert
 global data srate megM3d megR3d roundnum
@@ -733,8 +778,8 @@ if RestOffset ~=0
         filtdatR = [];
         filtdat = [];
     for i = 1:size(megR3d,1)
-        filtdatR =  [filtdatR filterFGx(megR3d{i}, srate, handles.slider_freq.Value,handles.slider_width.Value)];
-        filtdatM =  [filtdatM filterFGx(megM3d{i}, srate, handles.slider_freq.Value, handles.slider_width.Value)];
+        filtdatR =  [filtdatR,  filterFGx(megR3d{i}, srate, handles.slider_freq.Value,handles.slider_width.Value)];
+        filtdatM =  [filtdatM,  filterFGx(megM3d{i}, srate, handles.slider_freq.Value, handles.slider_width.Value)];
     end
         % Filter data second to filter out edge artifacts
         % Make filtered move and rest data the same size, Round down from 50 on
@@ -767,11 +812,18 @@ else
     filtdat = filterFGx(data, srate, handles.slider_freq.Value, handles.slider_width.Value);
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FOCUS ON HERE FOR CHECKING START TIME (timestart)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % time vector
 timevec = 0+1/srate:(1/(srate)):size(filtdat,2)/srate;
 
+%timewin{1} only checks the starting time (default 0 sec) to the Time Window Size (0.5 sec)
+%For Rest PLV
 timewin{1} = [timestart  timestart+tws];
+
+%timewin{2} for Move PLV, at the end of the filtdat
 timewin{2} = [timestart+(size(filtdat,2)/2)/srate    timestart+tws+(size(filtdat,2)/2)/srate];
 
 % convert to time indices (sec)
@@ -794,7 +846,7 @@ tidx2 = dsearchn(timevec',timewin{2}');
                 for tria = 1:size(data,3)
 
                     %%% time window 1
-                    
+                    % synchmat1 - Rest PLV Plot
                  synchmat1(tria,chani,chanj) = mean( abs(mean(exp(1i* (angts(chani,tidx1(1):tidx1(2),tria) - angts(chanj,tidx1(1):tidx1(2),tria))),2)) );
 %                     % extract angles in channel i, all trials
 %                     tmpAi = angts(chani,tidx1(1):tidx1(2),tria);
@@ -807,6 +859,7 @@ tidx2 = dsearchn(timevec',timewin{2}');
 %                     synchmat1(tria,chani,chanj) = mean(trialsynch);
 
                     %%% time window 2
+                    % synchmat2 - Move PLV Plot
                     % extract phase angles
                     tmpAi = angts(chani,tidx2(1):tidx2(2),tria);
                     tmpAj = angts(chanj,tidx2(1):tidx2(2),tria);
@@ -866,12 +919,13 @@ tidx2 = dsearchn(timevec',timewin{2}');
         krusP = zeros(nchans,nchans);
         for ii = 1:nchans
             for jj = 1:nchans
+                %KRUSKALWALLIS Nonparametric one-way analysis of variance (ANOVA).
                 [krusP(ii,jj), tbl{ii,jj}, stats{ii,jj}] = kruskalwallis([synchmat1(:,ii,jj) synchmat2(:,ii,jj)], [], 'off');
             end
         end
         % Arrange kruskal-wallis values for labeling in image
-        kk = num2cell(krusP);
-        kk = cellfun(@num2str, kk, 'UniformOutput', false); % convert to string  
+        chans_krus_wall_vals = num2cell(krusP);
+        chans_krus_wall_vals = cellfun(@num2str, chans_krus_wall_vals, 'UniformOutput', false); % convert to string  
 
     %     ss = krusP <= alphaT;
     %     ssi = find(ss);
@@ -895,7 +949,7 @@ tidx2 = dsearchn(timevec',timewin{2}');
             % Reset previous stat sig labels
             g(tt).String = ' ';
             alphaT = 0.05/size(data,1);
-            if str2double(kk{tt} ) <= alphaT
+            if str2double(chans_krus_wall_vals{tt} ) <= alphaT
                 % Label images that are stat sig
                  g(tt) = text(hori(tt), vert(tt), 'X', 'HorizontalAlignment', 'Center', 'Color','w', 'FontWeight', 'bold', 'FontSize', 12.5, 'Parent', handles.krusWal);
             else
@@ -913,11 +967,14 @@ tidx2 = dsearchn(timevec',timewin{2}');
         
         handles.g = g;
 
-        [rowX,colX] = find(ind == 1);
+        [rowX,colX] = find(tril(ind,-1) == 1);
         SS_chan_inter = [rowX colX];
         
         % Assign Statistically Significant channel interactions and take
         % out the duplicates
-        assignin('base', 'SS_chan_inter', SS_chan_inter(1:size(SS_chan_inter,1)/2))
+        assignin('base', 'SS_chan_inter', SS_chan_inter)
+        assignin('base', 'krusP', krusP)
+        assignin('base', 'chans_krus_wall_vals', chans_krus_wall_vals)
+        
             
 'Done'

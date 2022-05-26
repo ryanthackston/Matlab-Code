@@ -1,4 +1,4 @@
-function [labels, meg] = meg_labels(answers)
+? function [labels, meg] = meg_labels(answers)
 
 % stack meg data together, delete 1st 3000 points in each block
 [blocks, stud, subj] = meg_blocks(answers);

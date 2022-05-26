@@ -55,7 +55,7 @@ function [meg_tw, Fmeg, meg_f, meg_fft_singleTW, x_abs, x_pow, x_pow_str, feat, 
        
        w = hamming(tw);
        srate = 1000;
-       freq_val = str2num(answers{4});
+       freq_val = str2num(answers{3});
        freq_width = str2num(answers{6});
        
        PLV = cell( trials, 2);

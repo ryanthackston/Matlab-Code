@@ -40,11 +40,11 @@ function [PLV_features, PLV_Mahal, Median_Mahal, Median_Mahal_Sort, Median_Mahal
         end
 
                 %PLV_Mahal_Sort saves the 10 largest Mahal distances between equivalent Rest and Move trials 
-                [Median_Mahal_Sort Median_Mahal_Ind] = sort(Median_Mahal, 'desc');
-                [Avg_Mahal_Sort Avg_Mahal_Ind] = sort(Avg_Mahal, 'desc');
+                [Median_Mahal_Sort, Median_Mahal_Ind] = sort(Median_Mahal, 'desc');
+                [Avg_Mahal_Sort, Avg_Mahal_Ind] = sort(Avg_Mahal, 'desc');
                 
-                Top_Median_Mahal_Sort = Median_Mahal_Sort(1:top_features)
-                Top_Median_Mahal_Ind = Median_Mahal_Ind(1:top_features)
+                Top_Median_Mahal_Sort = Median_Mahal_Sort(1:top_features);
+                Top_Median_Mahal_Ind = Median_Mahal_Ind(1:top_features);
                 
                 % Mahal Coord are low to high
                Top_Median_Mahal_Chan = [col(Top_Median_Mahal_Ind), row(Top_Median_Mahal_Ind)];
@@ -99,10 +99,11 @@ function [PLV_features, PLV_Mahal, Median_Mahal, Median_Mahal_Sort, Median_Mahal
                 Top_Median_Mahal_Ind = Median_Mahal_Ind(1:top_features)
                 
                 % Mahal Coord are low to high
-               Top_Median_Mahal_Chan = [col(Top_Median_Mahal_Ind), row(Top_Median_Mahal_Ind)];
+%                Top_Median_Mahal_Chan = [col(Top_Median_Mahal_Ind), row(Top_Median_Mahal_Ind)];
                
                PLV_features = zeros(trials, top_features);
                
+               % pick channel pairings for all time blocks and all trials
                for T = 1:trials
                    PLV_features(T,:) = PLV{T}(tril_ind(Top_Median_Mahal_Ind));
                end
