@@ -182,27 +182,6 @@ end
 
 temp_ind = find(labels ~= 0);
 
-% Rearrange the channel numbers to go sequentially from top-left to bottom-right
-% megMat = [];
-% megMat(1,:) = meg(12,:);
-% megMat(2,:) = meg(7,:);
-% megMat(3,:) = meg(6,:);
-% megMat(4,:) = meg(17,:);
-% megMat(5,:) = meg(14,:);
-% megMat(6,:) = meg(8,:);
-% megMat(7,:) = meg(11,:);
-% megMat(8,:) = meg(16,:);
-% megMat(9,:) = meg(5,:);
-% megMat(10,:) = meg(10,:);
-% megMat(11,:) = meg(4,:);
-% megMat(12,:) = meg(15,:);
-% megMat(13,:) = meg(9,:);
-% megMat(14,:) = meg(3,:);
-% megMat(15,:) = meg(1,:);
-% megMat(16,:) = meg(13,:);
-% megMat(17,:) = meg(2,:);
-% meg = megMat(:,:);
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% NEED TO CUT OUT EXTRA DATA FOR MOTOR IMG CONTROL
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -274,74 +253,7 @@ set(handles.text_time, 'String', ['Starting Time = ' num2str(handles.slider_time
 %% Current: Cut 1000 points before, 2100 points after
 % Start with {Trials} x [ Channels x Time Points ]
 % Rearrange data to be channels x time points x trials in for loop
-global data megM3d megR3d roundnum
-
-% if RestOffset ~=0
-%     megR3d = cell(size(MoveOnset, 1), 1);
-%     megM3d = cell(size(MoveOnset, 1), 1);
-% 
-%     filtdatM = [];
-%     filtdatR = [];
-%     % Cut out unrelated data in trials
-%     % 1 second before, 2 seconds after
-%     for i = 1:size(RestOnset, 1)
-%         % Rest
-%         megR3d{i} = meg( :, (RestOnset(i) + 1000) : RestOffset(i)-2000 );
-%         % Move
-%         megM3d{i} = meg( :, (MoveOnset(i) + 1000) : MoveOffset(i)-2000 );
-%         
-%         % filterFGx - Frequency domain narrow-band filter Gaussian
-%         filtdatR =  [filtdatR filterFGx(megR3d{i}, srate, handles.slider_freq.Value,handles.slider_width.Value)];
-%         filtdatM =  [filtdatM filterFGx(megM3d{i}, srate, handles.slider_freq.Value, handles.slider_width.Value)];
-%     end
-% 
-%     % Make filtered move and rest data the same size, Round down from roundnum on
-%     % the smallest matrix
-%             roundnum = str2double(answers{10});
-%             if size(filtdatR,2) <= size(filtdatM,2)
-%                     filtdatR = filtdatR(: , 1:roundnum*(floor(length(filtdatR)/roundnum)));
-%                     filtdatM = filtdatM(: , 1:roundnum*(floor(length(filtdatR)/roundnum)));
-%             else
-%                     filtdatM = filtdatM(: , 1:roundnum*(floor(length(filtdatM)/roundnum)));
-%                     filtdatR = filtdatR(: , 1:roundnum*(floor(length(filtdatM)/roundnum)));
-%             end
-%             
-%         if str2double(answers{9}) == 1
-%              % Round by time points
-%                filtdat = [reshape(filtdatR, size(filtdatR,1), roundnum, [])       reshape(filtdatM, size(filtdatM,1), roundnum, [])];
-%         elseif str2double(answers{9}) == 2
-%             % Round by trials
-%               filtdat = [reshape(filtdatR, size(filtdatR,1), [] , roundnum)      reshape(filtdatM, size(filtdatR,1), [], roundnum)];      
-%         end
-    
-% RestOffset == 0
-
-
-
-%     sorted_onsets = sort([MoveOnset; RestOnset]);
-%     largest_trial = max(diff(sorted_onsets));
-%     
-%     megR3d = zeros(channels, largest_trial, length(sorted_onsets) );
-%     megM3d = zeros(channels, largest_trial, length(sorted_onsets) );
-%     
-%     
-%     for i = 1:length(sorted_onsets)
-%         if i == length(sorted_onsets)
-%             if find(RestOnset == sorted_onsets(i))
-%                 megR3d(:,:,i) = meg(:, sorted_onsets(i):length(meg) );
-%             else find(MoveOnset == sorted_onsets(i))
-%                 megM3d(:,:,i) = meg(:, sorted_onsets(i):length(meg) );
-%             end
-%             
-%         else
-%             if find(RestOnset == sorted_onsets(i));
-%                 megR3d(:,:,i) = meg(:, sorted_onsets(i):(sorted_onsets(i+1)-1) );
-%             else find(MoveOnset == sorted_onsets(i)) ;
-%                 megM3d(:,:,i) = meg(:, sorted_onsets(i):(sorted_onsets(i+1)-1) ) ;
-%             end
-%         end
-%         
-%     end
+global data megM3d megR3d
 
 % Initialize 3D Matrix of Rest Trial and Move Trial meg data
 % Channels X Data X Trials
@@ -357,29 +269,9 @@ megR3d = zeros(channels, size(RestOnset(1): (MoveOnset(1)-4001) , 2) ,size(RestO
         megM3d(:,:,i) = meg(:,(MoveOnset(i):MoveOnset(i)+7999 ) );
         data(:,:,i) = [megR3d(:,:,i) megM3d(:,:,i)];
     end
-    % 62 Channels x 16000 Data Points X 30 Trials (First 8000 points are
+    % filtdat - 62 Channels x 16000 Data Points X 30 Trials (First 8000 points are
     % Rest, 2nd 8000 pnts are Move
     filtdat = filterFGx(data, srate, handles.slider_freq.Value, handles.slider_width.Value);
-
-        
-    
-%     megR3d = zeros(channels, size(RestOnset(1): (MoveOnset(2)-4001) , 2) ,size(RestOnset,1));
-%     megM3d = zeros(channels, size(MoveOnset(1): RestOnset(2)-4001, 2) ,size(MoveOnset,1));
-%     data = zeros(channels, size(MoveOnset(1): RestOnset(2)-4001, 2)*2 ,size(RestOnset,1));
-%     
-% 
-% 
-%     % motor img - calib
-%     for i = 1:size(RestOnset,1)
-%         % 8 second trials -> subtract out the last 4000 points
-%         megR3d(:,:,i) = meg(:,(RestOnset(i): (MoveOnset(i)-4001) ));
-%         % Move trials -> subtract out the last 4000 points
-%         megM3d(:,:,i) = meg(:,(MoveOnset(i): (MoveOnset(i) + (size(MoveOnset(1): RestOnset(2)-4002, 2)) ) ) );
-%         data(:,:,i) = [megR3d(:,:,i) megM3d(:,:,i)];
-%     end
-%     filtdat = filterFGx(data, srate, handles.slider_freq.Value, handles.slider_width.Value);
-% end
-
 
 % time vector
 timevec = 0+1/srate:(1/(srate)): size(filtdat,2)/srate;
@@ -400,72 +292,7 @@ synchmat = zeros(2,channels,channels);
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % CREATE INITIAL PLOTS HERE
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert SS_chan_inter
-
-% % REST SYNCHRONIZATION INITIAL PLOT
-%         handles.restTW.XLim = [ 0.5 17.5 ];
-%         handles.restTW.YLim = [ 0.5 17.5 ];
-%         handles.restTW.CLimMode = 'manual'
-%         handles.restTW.CLim = [0 0.9];
-%         colorbar(handles.restTW)
-%         handles.restTW.Colormap = lbmap(500, 'RedBlue');
-%         % Make the axes square
-%         handles.restTW.PlotBoxAspectRatio = [1 1 1];
-%         % drawGrid(handles.restTW, 0.75);
-%         handles.plotR = imagesc( handles.restTW, 'CData', squeeze(synchmat(1,:,:)));
-%         handles.plotR.Parent.Title.String= [ 'Rest Synch: ' num2str(timewin{1}(1)) '-' num2str(timewin{1}(2)) ' Sec, '  '? \pm ? Hz'];
-%         handles.plotR.Parent.Title.Position = [10.5 17.85 0];
-%         handles.plotR.Parent.CLim = [0 0.9];
-%         % Plot grid lines 
-%         hold (handles.plotR.Parent,'on');
-%             for j = 1:channels
-%                 pRy{j} = plot(handles.plotR.Parent, [0.5, 17.5],[j-0.5, j-0.5],'k-');
-%                 pRx{j} = plot(handles.plotR.Parent,[j-0.5, j-0.5],[0.5, 17.5],'k-');
-%             end
-%         hold (handles.plotR.Parent,'off')
-% 
-% 
-% % MOVEMENT SYNCHRONIZATION INITIAL PLOT
-%         handles.moveTW.XLim = [0.5 17.5];
-%         handles.moveTW.YLim = [0.5 17.5];
-%         handles.moveTW.CLimMode = 'manual'
-%         handles.moveTW.CLim = [0 0.9];
-%         colorbar(handles.moveTW)
-%         handles.moveTW.Colormap = lbmap(500, 'RedBlue');
-%         % Make the axes square
-%         handles.moveTW.PlotBoxAspectRatio = [1 1 1];
-%         handles.plotM = imagesc( handles.moveTW, 'CData', squeeze(synchmat(2,:,:)));
-%         handles.plotM.Parent.Title.String = [ 'Move Synch: ' num2str(timewin{2}(1)) '-' num2str(timewin{2}(2)) ' Sec, '  '? \pm ? Hz'];
-%         handles.plotM.Parent.Title.Position = [11.5 17.85 0];
-%         handles.plotM.Parent.CLim = [0 0.9];
-%         % Plot grid lines 
-%         hold (handles.plotM.Parent,'on')
-%             for j = 1:channels
-%                 pMy{j} = plot(handles.moveTW, [0.5,18.5],[j-.5,j-.5],'k-');
-%                 pMx{j} = plot(handles.moveTW,[j-.5,j-.5],[0.5, 18.5],'k-');
-%             end
-%         hold (handles.plotM.Parent,'off')
-% 
-% 
-% % PHASE DIFFERENCE SYNCHRONIZATION PLOT
-%         handles.phaseDif.XLim = [0.5 17.5];
-%         handles.phaseDif.YLim = [0.5 17.5];
-%         handles.phaseDif.CLimMode = 'manual';
-%         colorbar(handles.phaseDif)
-%         handles.phaseDif.Colormap = lbmap(500, 'RedBlue');
-%         handles.phaseDif.CLim = [-.1 .1];
-%         % Make the axes square
-%         handles.phaseDif.PlotBoxAspectRatio = [1 1 1];
-%         handles.plotD = imagesc( handles.phaseDif, 'CData', squeeze(diff(synchmat)));
-%         handles.plotD.Parent.Title.String = 'Phase Synchronization Difference: Move - Rest';
-%         handles.plotD.Parent.Title.Position = [10.5000 17.85 0];
-%         handles.plotR.Parent.CLim = [-.1 .1];        
-%         hold (handles.plotD.Parent,'on');
-%             for j = 1:channels
-%                 pDy{j} = plot(handles.phaseDif, [0.5,18.5],[j-.5,j-.5],'k-');
-%                 pDx{j} = plot(handles.phaseDif,[j-.5,j-.5],[0.5, 18.5],'k-');
-%             end
-%         hold (handles.plotD.Parent,'off');
+global pSx pSy g hori vert SS_chan_inter
 
 % KRUSKAL WALLIS STASTICALLY SIGNIFICANT PHASE SYNCHRONIZATION
         % GUI Limits, colors
@@ -491,90 +318,40 @@ global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert SS_chan_inter
                 pSx{j} = plot(handles.krusWal,[j-.5,j-.5],[.5,63.5],'k-');
             end
         hold (handles.plotSS.Parent,'off');
-
-    % angle time-series
-    angts = zeros(size(filtdat));
-    
-% (In my code I want to compute Phase-Locking Value here)
-    %     How do I take out this for loop?
-    for triali=1:size(filtdat,3)
-        % Applying hilbert transform to matrix inputs, phase angles should be
-        % sawtooth slanted to the right
-        angts(:,:,triali) = angle(hilbert(squeeze(filtdat(:,:,triali))').');
-        % Plot angle time series and check phase angles
-        % figure(5); plot(angts(5,:,10));
-    end
+        
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PLV CALCULATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     synchmat1 = zeros( (size(filtdat,3)), (size(filtdat,1)), (size(filtdat,1)) );
     synchmat2 = zeros( (size(filtdat,3)), (size(filtdat,1)), (size(filtdat,1)) );
+     
+     % Upgraded PLV test-code
+     [nchans, ns_rest, nt] = size(filtdat(:, (tidx1(1):tidx1(2)), :) );
+     [nchans, ns_move, nt] = size(filtdat(:, (tidx2(1):tidx2(2)), :) );
+     
+     ndat_rest = filtdat(:, (tidx1(1):tidx1(2)), :) ./ abs(filtdat(:, (tidx1(1):tidx1(2)), :) );
+     ndat_move = filtdat(:, (tidx2(1):tidx2(2)), :) ./ abs(filtdat(:, (tidx2(1):tidx2(2)), :) );
 
-    % Is it possible to take out these for loops?
-    nchans = size(filtdat,1);
-     for chani=1:nchans
-        for chanj=1:nchans
-            for tria = 1:size(filtdat,3)
-
-                %%% time window 1
-                % extract angles in channel i, all trials
-                tmpAi = angts(chani,tidx1(1):tidx1(2),tria);
-                % extract angles in channel j all trials
-                tmpAj = angts(chanj,tidx1(1):tidx1(2),tria);
-                % compute synchronization between the two channels
-                % abs( mean( eulers formula( phase angle diff)), 2nd dim: time points)
-                trialsynch = abs(mean(exp(1i*( tmpAi-tmpAj )),2));
-                % average over trials - synchmat 1st Time Window
-                synchmat1(tria,chani,chanj) = mean(trialsynch);
-
-                %%% time window 2
-                % extract angles
-                tmpAi = angts(chani,tidx2(1):tidx2(2),tria);
-                tmpAj = angts(chanj,tidx2(1):tidx2(2),tria);
-                % Phase Locking Value on each trial
-                trialsynch = abs(mean(exp(1i*( tmpAi-tmpAj )),2));
-                % average over trials - synchmat 2nd Time Window
-
-                synchmat2(tria,chani,chanj) = mean(trialsynch); 
-            end            
-        end
-     end
-    % synchmat Difference - Time Window x channels x channels 
-    synchmatD = [mean(synchmat1,1); mean(synchmat2,1)];
-%     synchmatDif(1,chani,chanj) = mean((synchmat2(:,chani,chanj) - synchmat1(:,chani,chanj)),1);
-    diffS = squeeze(abs(synchmatD(2,:,:) - synchmatD(1,:,:)));
-%     diffS == diff(synchmatD)
-%     subplot(1,4,1)
-%     title([ 'Synch: ' num2str(timewin{1}(1)) '-' num2str(timewin{1}(2)) ' Sec, ' num2str(centfreq) ' Hz \pm ' num2str(freqwidt)]);
-
-%% UPDATE THE IMAGES
-% % Update Rest Trials Plot
-%         handles.plotR = imagesc( handles.restTW, 'CData', squeeze(mean(synchmat1,1))' );
-%         handles.plotR.Parent.Title.String =  [ 'Rest Phase Synch: ' num2str(timewin{1}(1)) '-' num2str(timewin{1}(2)) ' Sec, ' num2str(centfreq) ' \pm ' num2str(freqwidt) ' Hz'];
-%         handles.plotR.Parent.Title.FontSize = 11;
-%         handles.plotR.Parent.CLim = [0 0.9];
-%         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pRx{:});
-%         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-%         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pRy{:});
-%         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-% 
-% % Update Move Trials Plot
-%         handles.plotM = imagesc( handles.moveTW, 'CData', squeeze(mean(synchmat2,1)) );
-%         handles.plotM.Parent.Title.String =  [ 'Move Phase Synch: ' num2str(timewin{2}(1)) '-' num2str(timewin{2}(2)) ' Sec, ' num2str(centfreq) ' Hz \pm ' num2str(freqwidt) ' Hz'];
-%         handles.plotM.Parent.Title.FontSize = 11;
-%         handles.plotM.Parent.CLim = [0 0.9];
-%         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pMx{:});
-%         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-%         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pMy{:});
-%         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-%   
-% % Update Phase Difference Plot
-%         handles.plotD = imagesc( handles.phaseDif, 'CData', squeeze(diff(synchmatD)) ); 
-% %         handles.plotD.Parent.Title.String = ['Phase Synchronization Difference: Move - Rest'];
-%         handles.plotD.Parent.Title.FontSize = 13.5;
-%         handles.plotD.Parent.CLim = [-0.1 0.1];
-%         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pDx{:});
-%         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-%         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pDy{:});
-%         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
+     % PLV - channel x channel x time window
+%      plv_fast_rest = zeros(nchans, nchans, nt);
+%      plv_fast_move = zeros(nchans, nchans, nt);
+     
+    for t = 1: nt
+ %         plv_fast_rest(:,:, t) = abs(ndat_rest(:, :, t) * ndat_rest(:, :, t)') / ns_rest;
+%          plv_fast_move(:,:, t) = abs(ndat_move(:, :, t) * ndat_move(:, :, t)') / ns_move;
+        synchmat1(t,:, :) = abs(ndat_rest(:, :, t) * ndat_rest(:, :, t)') / ns_rest;
+        synchmat2(t,:, :) = abs(ndat_move(:, :, t) * ndat_move(:, :, t)') / ns_move;
+    end
+    
+%     plv_fast_rest = permute(plv_fast_rest, [3,1,2]);
+%     synchmat1 = plv_fast_rest;
+%     
+%     plv_fast_move = permute(plv_fast_move, [3,1,2]);
+%     synchmat2 = plv_fast_move;
+%     
+%      
+%     'test'
     
     % Kruskal-Wallis test on Phase-Locking Value data
     krusP = zeros(nchans,nchans);
@@ -752,9 +529,8 @@ end
 
 function updatePhaseSync(handles)
 
-global answers stud subj blocks RestOnset MoveOnset nchans krusP chans_krus_wall_vals alphaT RestOffset
-global begF endF stepf meg
-global pRx pRy pMx pMy pDx pDy pSx pSy g hori vert
+global answers RestOnset  nchans krusP chans_krus_wall_vals alphaT RestOffset
+global  pSx pSy g hori vert
 global data srate megM3d megR3d roundnum
 
     % get the new parameter values
@@ -812,10 +588,6 @@ else
     filtdat = filterFGx(data, srate, handles.slider_freq.Value, handles.slider_width.Value);
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% FOCUS ON HERE FOR CHECKING START TIME (timestart)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % time vector
 timevec = 0+1/srate:(1/(srate)):size(filtdat,2)/srate;
 
@@ -834,101 +606,37 @@ tidx2 = dsearchn(timevec',timewin{2}');
     synchmat1 = zeros( (size(filtdat,3)), (size(filtdat,1)), (size(filtdat,1)) );
     synchmat2 = zeros( (size(filtdat,3)), (size(filtdat,1)), (size(filtdat,1)) );
 
-    nchans = size(data,1);
-       for triali=1:size(data,3)
-            % Applying hilbert transform to matrix inputs
-            % This is where frequency-related data is put in, from filtdat
-            angts(:,:,triali) = angle(hilbert(squeeze(filtdat(:,:,triali))').');
-       end
+     [ns_rest] = size(filtdat(:, (tidx1(1):tidx1(2)), :), 2 );
+     [ nchans, ns_move, nt] = size(filtdat(:, (tidx2(1):tidx2(2)), :) );
+     
+     ndat_rest = filtdat(:, (tidx1(1):tidx1(2)), :) ./ abs(filtdat(:, (tidx1(1):tidx1(2)), :) );
+     ndat_move = filtdat(:, (tidx2(1):tidx2(2)), :) ./ abs(filtdat(:, (tidx2(1):tidx2(2)), :) );
 
-         for chani=1:nchans
-            for chanj=1:nchans
-                for tria = 1:size(data,3)
-
-                    %%% time window 1
-                    % synchmat1 - Rest PLV Plot
-                 synchmat1(tria,chani,chanj) = mean( abs(mean(exp(1i* (angts(chani,tidx1(1):tidx1(2),tria) - angts(chanj,tidx1(1):tidx1(2),tria))),2)) );
-%                     % extract angles in channel i, all trials
-%                     tmpAi = angts(chani,tidx1(1):tidx1(2),tria);
-%                     % extract angles in channel j all trials
-%                     tmpAj = angts(chanj,tidx1(1):tidx1(2),tria);
-%                     % compute synchronization between the two channels
-%                     % abs( mean( eulers formula( phase angle diff)), 2nd dim: time points)
-%                     trialsynch = abs(mean(exp(1i*( tmpAi-tmpAj )),2));
-%                     % average over trials - synchmat 1st Time Window
-%                     synchmat1(tria,chani,chanj) = mean(trialsynch);
-
-                    %%% time window 2
-                    % synchmat2 - Move PLV Plot
-                    % extract phase angles
-                    tmpAi = angts(chani,tidx2(1):tidx2(2),tria);
-                    tmpAj = angts(chanj,tidx2(1):tidx2(2),tria);
-                    % Phase Locking Value on each trial
-                    trialsynch = abs(mean(exp(1i*( tmpAi-tmpAj )),2));
-                    % average over trials - synchmat 2nd Time Window
-
-                    synchmat2(tria,chani,chanj) = mean(trialsynch); 
-                end            
-            end
-         end
-        % synchmat Difference - Time Window x channels x channels - These
-        % must be the Rest Trials 
-        synchmatD = [mean(synchmat1,1); mean(synchmat2,1)];
-    %     synchmatDif(1,chani,chanj) = mean((synchmat2(:,chani,chanj) - synchmat1(:,chani,chanj)),1);
-        % diffS = synchmatD(2,:,:) - synchmatD(1,:,:);
-        % diffS == diff(synchmatD)
-    %     subplot(1,4,1)
-    %     title([ 'Synch: ' num2str(timewin{1}(1)) '-' num2str(timewin{1}(2)) ' Sec, ' num2str(centfreq) ' Hz \pm ' num2str(freqwidt)]);
-
-    %% UPDATE THE IMAGES
-%     % Update Rest Trials Plot
-% %             set(handles.plotR, 'CData', squeeze(mean(synchmat1,1))' );
-%             handles.restTW = imagesc( handles.restTW, 'CData', squeeze(mean(synchmat1,1))' ) 
-%             handles.restTW.Parent.Title.String =  [ 'Rest Phase Synch: ' num2str(timewin{1}(1)) '-' num2str(timewin{1}(2)) ' Sec, ' num2str(centfreq) ' \pm ' num2str(freqwidt) ' Hz'];
-%             handles.restTW.Parent.Title.FontSize = 11;
-%         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pRx{:});
-%         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-%         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pRy{:});
-%         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-% 
-% 
-%     % Update Move Trials Plot
-% %              set(handles.plotM, 'CData', squeeze(mean(synchmat2,1))' );
-% 
-%             handles.plotM = imagesc( handles.moveTW, 'CData', squeeze(mean(synchmat2,1))' )
-%             handles.plotM.Parent.Title.String =  [ 'Move Phase Synch: ' num2str(timewin{2}(1)) '-' num2str(timewin{2}(2)) ' Sec, ' num2str(centfreq) ' Hz \pm ' num2str(freqwidt) ' Hz'];
-%             handles.plotM.Parent.Title.FontSize = 11;
-%         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pMx{:});
-%         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-%         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pMy{:});
-%         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-% 
-% 
-%     % Update Phase Difference Plot
-% %             set(handles.plotD, 'CData', squeeze(diff(synchmatD)) );
-%             handles.plotD = imagesc( handles.phaseDif, 'CData', squeeze(diff(synchmatD)) ) 
-%     %         handles.plotD.Parent.Title.String = ['Phase Synchronization Difference: Move - Rest'];
-%             handles.plotD.Parent.Title.FontSize = 13.5;
-%         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pDx{:});
-%         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-%         [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96] = deal(pDy{:});
-%         uistack([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45, p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60, p61, p62, p63, p64, p65, p66, p67, p68, p69, p70, p71, p72, p73, p74, p75, p76, p77, p78, p79, p80, p81, p82, p83, p84, p85, p86, p87, p88, p89, p90, p91, p92, p93, p94, p95, p96], 'top');
-% 
-
+     % PLV - channel x channel x time window
+%      plv_fast_rest = zeros(nchans, nchans, nt);
+%      plv_fast_move = zeros(nchans, nchans, nt);
+     
+    for t = 1: nt
+%         plv_fast_rest(:,:, t) = abs(ndat_rest(:, :, t) * ndat_rest(:, :, t)') / ns_rest;
+%          plv_fast_move(:,:, t) = abs(ndat_move(:, :, t) * ndat_move(:, :, t)') / ns_move;
+        synchmat1(t,:, :) = abs(ndat_rest(:, :, t) * ndat_rest(:, :, t)') / ns_rest;
+        synchmat2(t,:, :) = abs(ndat_move(:, :, t) * ndat_move(:, :, t)') / ns_move;
+    end
+    
+    %%%%
+    
         % Kruskal-Wallis test on Phase-Locking Value data
         krusP = zeros(nchans,nchans);
         for ii = 1:nchans
             for jj = 1:nchans
                 %KRUSKALWALLIS Nonparametric one-way analysis of variance (ANOVA).
-                [krusP(ii,jj), tbl{ii,jj}, stats{ii,jj}] = kruskalwallis([synchmat1(:,ii,jj) synchmat2(:,ii,jj)], [], 'off');
+%                 [krusP(ii,jj), tbl{ii,jj}, stats{ii,jj}] = kruskalwallis([synchmat1(:,ii,jj) synchmat2(:,ii,jj)], [], 'off');
+                    [krusP(ii,jj)] = kruskalwallis([synchmat1(:,ii,jj) synchmat2(:,ii,jj)], [], 'off');
             end
         end
         % Arrange kruskal-wallis values for labeling in image
         chans_krus_wall_vals = num2cell(krusP);
         chans_krus_wall_vals = cellfun(@num2str, chans_krus_wall_vals, 'UniformOutput', false); % convert to string  
-
-    %     ss = krusP <= alphaT;
-    %     ssi = find(ss);
     
     % Update Kruskal-Wallis Statistical Test Plot
 %         set(handles.plotSS, 'CData', krusP );
@@ -950,7 +658,7 @@ tidx2 = dsearchn(timevec',timewin{2}');
             g(tt).String = ' ';
             alphaT = 0.05/size(data,1);
             if str2double(chans_krus_wall_vals{tt} ) <= alphaT
-                % Label images that are stat sig
+                 % Label images that are statistiacally significiant with an X
                  g(tt) = text(hori(tt), vert(tt), 'X', 'HorizontalAlignment', 'Center', 'Color','w', 'FontWeight', 'bold', 'FontSize', 12.5, 'Parent', handles.krusWal);
             else
                 continue;
